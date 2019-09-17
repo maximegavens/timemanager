@@ -4,6 +4,7 @@ defmodule ApiWeb.ClocksController do
   alias Api.ClockContext
   alias Api.ClockContext.Clocks
   alias Api.UserContext
+  alias Api.WorkingtimeContext
 
   action_fallback ApiWeb.FallbackController
 
@@ -14,6 +15,7 @@ defmodule ApiWeb.ClocksController do
 
   def create(conn, %{"userID" => id}) do
     user = UserContext.get_users(id)
+    # TODO CONFIG PARIS DATETIME
     time = NaiveDateTime.utc_now
     previousClock = ClockContext.get_previous_clock_by_user_id(id)
     if previousClock == nil do
@@ -31,6 +33,9 @@ defmodule ApiWeb.ClocksController do
       end
     else
       clocks_params = %{"time" => time, "status" => !previousClock.status}
+      if previousClock.status == true do
+        WorkingtimeContext.create_workingtimes(user, %{"start" => previousClock.time, "end" => time})
+      end
 
       if user != nil do
         with {:ok, %Clocks{} = clocks} <- ClockContext.create_clocks(user, clocks_params) do

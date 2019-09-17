@@ -25,6 +25,14 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :api, :phoenix_swagger,
+       swagger_files: %{
+         "priv/static/swagger.json" => [
+           router: ApiWeb.Router,
+           endpoint: ApiWeb.Endpoint
+         ]
+       }
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

@@ -12,6 +12,15 @@ defmodule ApiWeb.WorkingtimesController do
     render(conn, "index.json", workingtimes: workingtimes)
   end
 
+  def indexManager(conn, %{"managerID" => id}) do
+    manager = UserContext.get_users(id)
+
+    if manager != nil do
+      workingtimes = WorkingtimeContext.get_workingtimes_by_team_id(manager.team)
+      render(conn, "index.json", workintimes: workingtimes)
+    end
+  end
+
 
   def showAll(conn, param) do
     userID = param["userID"]

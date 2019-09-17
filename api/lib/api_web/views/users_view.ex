@@ -13,6 +13,9 @@ defmodule ApiWeb.UsersView do
   def render("users.json", %{users: users}) do
     %{id: users.id,
       username: users.username,
-      email: users.email}
+      email: users.email,
+      status: users.status,
+      team: users.team,
+      password: users.password}
   end
 end

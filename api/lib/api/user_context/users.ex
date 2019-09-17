@@ -7,7 +7,10 @@ defmodule Api.UserContext.Users do
 
   schema "users" do
     field :email, :string
+    field :status, :string
     field :username, :string
+    field :password, :string
+    field :team, :integer
     has_many :workingtimes, Workingtimes
     has_many :clocks, Clocks
 
@@ -17,7 +20,7 @@ defmodule Api.UserContext.Users do
   @doc false
   def changeset(users, attrs) do
     users
-    |> cast(attrs, [:username, :email])
-    |> validate_required([:username, :email])
+    |> cast(attrs, [:status, :username, :email, :password, :team])
+    |> validate_required([:status, :username, :email, :password, :team])
   end
 end

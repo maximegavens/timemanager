@@ -8,14 +8,23 @@ defmodule ApiWeb.UsersController do
 
   def index(conn, params) do
     email = params["email"]
-    username = params["username"]
-    if email == nil || username == nil do
+    password = params["password"]
+    if email == nil || password == nil do
       users = UserContext.list_users()
       render(conn, "index.json", users: users)
     else
-      users = UserContext.list_users_with_params(email, username)
+      users = UserContext.get_users_by_email_and_password(email, password)
       IO.inspect(users)
       render(conn, "show.json", users: users)
+    end
+  end
+
+  def indexManager(conn, %{"managerID" => id}) do
+    manager = UserContext.get_users!(id)
+
+    if manager != nil do
+      users = UserContext.get_users_by_team(manager.team)
+      render(conn, "index.json", users: users)
     end
   end
 

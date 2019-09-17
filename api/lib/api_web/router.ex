@@ -17,19 +17,21 @@ defmodule ApiWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
-
+    get "/swagger", PageController, :swagger
   end
 
   scope "/api", ApiWeb do
     pipe_through :api
 
     get "/users", UsersController, :index
+    get "/users/manager/:managerID", UsersController, :indexManager
     get "/users/:userID", UsersController, :show
     post "/users", UsersController, :create
     put "/users/:userID", UsersController, :update
     delete "/users/:userID", UsersController, :delete
 
     get "/workingtimes", WorkingtimesController, :index
+    get "/workingtimes/manager/:managerID", WorkingtimesController, :indexManager
     get "/workingtimes/:userID", WorkingtimesController, :showAll
     get "/workingtimes/:userID/:workingtimeID", WorkingtimesController, :showOne
     post "/workingtimes/:userID", WorkingtimesController, :create
@@ -39,5 +41,14 @@ defmodule ApiWeb.Router do
     get "/clocks/:userID", ClocksController, :index
     get "/clocks/:id", ClocksController, :show
     post "/clocks/:userID", ClocksController, :create
+  end
+
+  def swagger_info do
+    %{
+      info: %{
+        version: "1.0",
+        title: "Api"
+      }
+    }
   end
 end

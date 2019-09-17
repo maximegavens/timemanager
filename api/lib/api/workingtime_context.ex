@@ -20,6 +20,13 @@ defmodule Api.WorkingtimeContext do
     |> Repo.get!(id)
   end
 
+  def get_workingtimes_by_team_id(team) do
+    query = (from u in Workingtimes,
+                where: u.team == ^(team),
+                select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
   def get_workingtimes_by_user_id(userID) do
     query = (from u in Workingtimes,
                   where: u.user_id == ^(userID),
