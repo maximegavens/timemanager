@@ -23,13 +23,18 @@ defmodule Api.UserContext do
     Repo.all(Users)
   end
 
-  def get_users_by_email_and_password(email, password) do
-    IO.inspect(email)
-    IO.inspect(password)
+  def get_user_by_email_and_password(email, password) do
     query = (from u in Users,
           where: u.email == ^(email),
           where: u.password == ^(password),
-          select: %Users{id: u.id, status: u.status, email: u.email, username: u.username, password: u.password, team: u.team})
+          select: %Users{id: u.id, role: u.role, email: u.email, username: u.username, password_hash: u.password_hash, team: u.team, token: u.token, expiry: u.expiry})
+    Repo.one(query)
+  end
+
+  def get_user_by_email(email) do
+    query = (from u in Users,
+                  where: u.email == ^(email),
+                  select: %Users{id: u.id, role: u.role, email: u.email, username: u.username, password_hash: u.password_hash, team: u.team, token: u.token, expiry: u.expiry})
     Repo.one(query)
   end
 
@@ -37,8 +42,15 @@ defmodule Api.UserContext do
     IO.inspect(team)
     query = (from u in Users,
                   where: u.team == ^(team),
-                  select: %Users{id: u.id, status: u.status, email: u.email, username: u.username, password: u.password, team: u.team})
+                  select: %Users{id: u.id, role: u.role, email: u.email, username: u.username, password_hash: u.password_hash, team: u.team, token: u.token, expiry: u.expiry})
     Repo.all(query)
+  end
+
+  def get_user_by_token(token) do
+    query = (from u in Users,
+                  where: u.token == ^(token),
+                  select: %Users{id: u.id, role: u.role, email: u.email, username: u.username, password_hash: u.password_hash, team: u.team, token: u.token, expiry: u.expiry})
+    Repo.one(query)
   end
 
   @doc """
@@ -95,6 +107,12 @@ defmodule Api.UserContext do
   def update_users(%Users{} = users, attrs) do
     users
     |> Users.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_token(%Users{} = users, attrs) do
+    users
+    |> Users.changeset_token(attrs)
     |> Repo.update()
   end
 

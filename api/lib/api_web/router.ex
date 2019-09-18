@@ -13,6 +13,10 @@ defmodule ApiWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :authenticate do
+    plug Api.Plugs.Authenticate
+  end
+
   scope "/", ApiWeb do
     pipe_through :browser
 
@@ -22,13 +26,15 @@ defmodule ApiWeb.Router do
 
   scope "/api", ApiWeb do
     pipe_through :api
+    pipe_through :authenticate
 
     get "/users", UsersController, :index
     get "/users/manager/:managerID", UsersController, :indexManager
     get "/users/:userID", UsersController, :show
-    post "/users", UsersController, :create
     put "/users/:userID", UsersController, :update
     delete "/users/:userID", UsersController, :delete
+
+    get "/users/sign_out", UsersController, :signOut
 
     get "/workingtimes", WorkingtimesController, :index
     get "/workingtimes/manager/:managerID", WorkingtimesController, :indexManager
@@ -41,6 +47,13 @@ defmodule ApiWeb.Router do
     get "/clocks/:userID", ClocksController, :index
     get "/clocks/:id", ClocksController, :show
     post "/clocks/:userID", ClocksController, :create
+  end
+
+  scope "/api", ApiWeb do
+    pipe_through :api
+
+    post "/users/sign_in", UsersController, :signIn
+    post "/users/sign_up", UsersController, :signUp
   end
 
   def swagger_info do

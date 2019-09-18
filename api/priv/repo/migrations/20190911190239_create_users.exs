@@ -5,9 +5,11 @@ defmodule Api.Repo.Migrations.CreateUsers do
     create table(:users) do
       add :username, :string
       add :email, :string
-      add :password, :string
+      add :password_hash, :string
       add :team, :integer
-      add :status, :string
+      add :role, :string
+      add :token, :string
+      add :expiry, :naive_datetime
 
       timestamps()
     end

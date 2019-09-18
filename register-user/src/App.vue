@@ -65,7 +65,7 @@ export default {
   data() {
     return {
       componentState: this.$store.state.status,
-      widget: 'home'
+      widget: 'home',
     }
   },
   computed : {
@@ -80,7 +80,7 @@ export default {
               .then(resp => {console.log(resp); this.componentState = this.$store.state.status; console.log(this.componentState)})
     },
     timePoint: function () {
-      this.$store.dispatch('clock')
+      this.$store.dispatch('clock', this.$store.state.user.id)
               .then(resp => console.log(resp))
     }
   },

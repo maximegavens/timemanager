@@ -7,10 +7,13 @@ defmodule Api.UserContext.Users do
 
   schema "users" do
     field :email, :string
-    field :status, :string
+    field :role, :string
     field :username, :string
-    field :password, :string
+    field :password_hash, :string
+    field :password, :string, virtual: true
     field :team, :integer
+    field :token, :string
+    field :expiry, :naive_datetime
     has_many :workingtimes, Workingtimes
     has_many :clocks, Clocks
 
@@ -20,7 +23,23 @@ defmodule Api.UserContext.Users do
   @doc false
   def changeset(users, attrs) do
     users
-    |> cast(attrs, [:status, :username, :email, :password, :team])
-    |> validate_required([:status, :username, :email, :password, :team])
+    |> cast(attrs, [:role, :username, :email, :password, :team])
+    |> validate_required([:role, :username, :email, :password, :team])
+    |> put_password_hash()
+  end
+
+  def changeset_token(users, attrs) do
+    users
+    |> cast(attrs, [:token, :expiry])
+    |> validate_required([:token, :expiry])
+  end
+
+  defp put_password_hash(changeset) do
+    case changeset do
+      %Ecto.Changeset{valid?: true, changes: %{password: pass}} ->
+        put_change(changeset, :password_hash, Comeonin.Bcrypt.hashpwsalt(pass))
+      _ ->
+        changeset
+    end
   end
 end
