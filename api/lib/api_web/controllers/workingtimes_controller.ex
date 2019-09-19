@@ -78,45 +78,66 @@ defmodule ApiWeb.WorkingtimesController do
     end
   end
 
-  # TODO non adapter
-  def showTeamOne(conn, %{"start" => start, "end" => endd, "teamID" => teamID, "userID" => userID}) do
+  def showTeamOne(conn, param) do
+    start = param["start"]
+    endd = param["end"]
+    teamID = param["teamID"]
+    userID = param["userID"]
     if start == nil do
       if endd == nil do
-        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_team_id(userID, teamID)
-        render(conn, "index.json", workingtimes: workingtimes)
+        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id(userID)
+        filteredWorkingtimes = filterWorkingtimesByTeamID(workingtimes, teamID)
+        render(conn, "index.json", workingtimes: filteredWorkingtimes)
       else
-        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_end_and_team_id(userID, endd, teamID)
-        render(conn, "index.json", workingtimes: workingtimes)
+        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_end(userID, endd)
+        filteredWorkingtimes = filterWorkingtimesByTeamID(workingtimes, teamID)
+        render(conn, "index.json", workingtimes: filteredWorkingtimes)
       end
     else
       if endd == nil do
-        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_start_and_team_id(userID, start, teamID)
-        render(conn, "index.json", workingtimes: workingtimes)
+        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_start(userID, start)
+        filteredWorkingtimes = filterWorkingtimesByTeamID(workingtimes, teamID)
+        render(conn, "index.json", workingtimes: filteredWorkingtimes)
       else
-        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_start_and_end_and_team_id(userID, start, endd, teamID)
-        render(conn, "index.json", workingtimes: workingtimes)
+        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_start_and_end(userID, start, endd)
+        filteredWorkingtimes = filterWorkingtimesByTeamID(workingtimes, teamID)
+        render(conn, "index.json", workingtimes: filteredWorkingtimes)
       end
     end
   end
 
-  # TODO non adapter
-  def showTeamAll(conn, %{"start" => start, "end" => endd, "teamID" => teamID}) do
+  def showTeamAll(conn, param) do
+    start = param["start"]
+    endd = param["end"]
+    teamID = param["teamID"]
     if start == nil do
       if endd == nil do
-        workingtimes = WorkingtimeContext.get_workingtimes_by_team_id(teamID)
-        render(conn, "index.json", workingtimes: workingtimes)
+        workingtimes = WorkingtimeContext.list_workingtimes()
+        filteredWorkingtimes = filterWorkingtimesByTeamID(workingtimes, teamID)
+        render(conn, "index.json", workingtimes: filteredWorkingtimes)
       else
-        workingtimes = WorkingtimeContext.get_workingtimes_by_end_and_team_id(endd, teamID)
-        render(conn, "index.json", workingtimes: workingtimes)
+        workingtimes = WorkingtimeContext.get_workingtimes_by_end(endd)
+        filteredWorkingtimes = filterWorkingtimesByTeamID(workingtimes, teamID)
+        render(conn, "index.json", workingtimes: filteredWorkingtimes)
       end
     else
       if endd == nil do
-        workingtimes = WorkingtimeContext.get_workingtimes_by_start_and_team_id(start, teamID)
-        render(conn, "index.json", workingtimes: workingtimes)
+        workingtimes = WorkingtimeContext.get_workingtimes_by_start(start)
+        filteredWorkingtimes = filterWorkingtimesByTeamID(workingtimes, teamID)
+        render(conn, "index.json", workingtimes: filteredWorkingtimes)
       else
-        workingtimes = WorkingtimeContext.get_workingtimes_by_start_and_end_and_team_id(start, endd, teamID)
-        render(conn, "index.json", workingtimes: workingtimes)
+        workingtimes = WorkingtimeContext.get_workingtimes_by_start_and_end(start, endd)
+        filteredWorkingtimes = filterWorkingtimesByTeamID(workingtimes, teamID)
+        render(conn, "index.json", workingtimes: filteredWorkingtimes)
       end
     end
+  end
+
+  defp filterWorkingtimesByTeamID(workingtimes, teamID) do
+    {i, _} = Integer.parse(teamID)
+    newWorkingtimes = Enum.filter workingtimes, fn(x) ->
+      i == x.user.team
+    end
+    newWorkingtimes
   end
 end

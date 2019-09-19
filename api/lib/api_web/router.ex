@@ -53,8 +53,8 @@ defmodule ApiWeb.Router do
     pipe_through :authenticate
     pipe_through :manager
     put "/users/:userID/team/:teamID", UsersController, :updateTeam                       # 5) Manage their team(s). (change user.team by teamID)
-    get "/workingtimes/:userID/team/:teamID", WorkingtimesController, :showTeamOne        # TODO 7) View the daily and weekly working hours of an employee over a period of time.
-    get "/workingtimes/team/:teamID", WorkingtimesController, :showTeamAll                # TODO 6) View the averages of the daily and weekly hours of the team over a given period. 8) View their employees’ dashboards .
+    get "/workingtimes/:userID/team/:teamID", WorkingtimesController, :showTeamOne        # 7) View the daily and weekly working hours of an employee over a period of time.
+    get "/workingtimes/team/:teamID", WorkingtimesController, :showTeamAll                # 6) View the averages of the daily and weekly hours of the team over a given period. 8) View their employees’ dashboards .
   end
 
   scope "/api", ApiWeb do
