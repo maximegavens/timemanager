@@ -34,10 +34,27 @@ defmodule Api.WorkingtimeContext do
     Repo.all(query)
   end
 
+  def get_workingtimes_by_user_id_and_team_id(userID, teamID) do
+    query = (from u in Workingtimes,
+                  where: u.user_id == ^(userID),
+                  where: u.team == ^(teamID),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
   def get_workingtimes_by_user_id_and_start(userID, start) do
     query = (from u in Workingtimes,
                   where: u.user_id == ^(userID),
-                  where: u.start == ^(start),
+                  where: u.end >= ^(start),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
+  def get_workingtimes_by_user_id_and_start_and_team_id(userID, start, teamID) do
+    query = (from u in Workingtimes,
+                  where: u.user_id == ^(userID),
+                  where: u.end >= ^(start),
+                  where: u.team == ^(teamID),
                   select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
     Repo.all(query)
   end
@@ -45,7 +62,16 @@ defmodule Api.WorkingtimeContext do
   def get_workingtimes_by_user_id_and_end(userID, endd) do
     query = (from u in Workingtimes,
                   where: u.user_id == ^(userID),
-                  where: u.end == ^(endd),
+                  where: u.start <= ^(endd),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
+  def get_workingtimes_by_user_id_and_end_and_team_id(userID, endd, teamID) do
+    query = (from u in Workingtimes,
+                  where: u.user_id == ^(userID),
+                  where: u.start <= ^(endd),
+                  where: u.team == ^(teamID),
                   select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
     Repo.all(query)
   end
@@ -53,8 +79,18 @@ defmodule Api.WorkingtimeContext do
   def get_workingtimes_by_user_id_and_start_and_end(userID, start, endd) do
     query = (from u in Workingtimes,
                   where: u.user_id == ^(userID),
-                  where: u.start == ^(start),
-                  where: u.end == ^(endd),
+                  where: u.end >= ^(start),
+                  where: u.start <= ^(endd),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
+  def get_workingtimes_by_user_id_and_start_and_end_and_team_id(userID, start, endd, teamID) do
+    query = (from u in Workingtimes,
+                  where: u.user_id == ^(userID),
+                  where: u.end >= ^(start),
+                  where: u.start <= ^(endd),
+                  where: u.team == ^(teamID),
                   select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
     Repo.all(query)
   end
@@ -64,6 +100,79 @@ defmodule Api.WorkingtimeContext do
             where: u.id == ^(workingtimesID),
             where: u.user_id == ^(userID),
             select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.one(query)
+  end
+
+  def get_workingtimes_by_user_id_and_workingtime_id_and_team_id(userID, workingtimesID, teamID) do
+    query = (from u in Workingtimes,
+                  where: u.id == ^(workingtimesID),
+                  where: u.user_id == ^(userID),
+                  where: u.team == ^(teamID),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.one(query)
+  end
+
+  # without user_id
+
+  def get_workingtimes_by_start(start) do
+    query = (from u in Workingtimes,
+                  where: u.end >= ^(start),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
+  def get_workingtimes_by_start_and_team_id(start, teamID) do
+    query = (from u in Workingtimes,
+                  where: u.end >= ^(start),
+                  where: u.team == ^(teamID),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
+  def get_workingtimes_by_end(endd) do
+    query = (from u in Workingtimes,
+                  where: u.start <= ^(endd),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
+  def get_workingtimes_by_end_and_team_id(endd, teamID) do
+    query = (from u in Workingtimes,
+                  where: u.start <= ^(endd),
+                  where: u.team == ^(teamID),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
+  def get_workingtimes_by_start_and_end(start, endd) do
+    query = (from u in Workingtimes,
+                  where: u.end >= ^(start),
+                  where: u.start <= ^(endd),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
+  def get_workingtimes_by_start_and_end_and_team_id(start, endd, teamID) do
+    query = (from u in Workingtimes,
+                  where: u.end >= ^(start),
+                  where: u.start <= ^(endd),
+                  where: u.team == ^(teamID),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.all(query)
+  end
+
+  def get_workingtimes_by_workingtime_id(workingtimesID) do
+    query = (from u in Workingtimes,
+                  where: u.id == ^(workingtimesID),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
+    Repo.one(query)
+  end
+
+  def get_workingtimes_by_workingtime_id_and_team_id(workingtimesID, teamID) do
+    query = (from u in Workingtimes,
+                  where: u.id == ^(workingtimesID),
+                  where: u.team == ^(teamID),
+                  select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
     Repo.one(query)
   end
 

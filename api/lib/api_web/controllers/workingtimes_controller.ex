@@ -12,15 +12,10 @@ defmodule ApiWeb.WorkingtimesController do
     render(conn, "index.json", workingtimes: workingtimes)
   end
 
-  def indexManager(conn, %{"managerID" => id}) do
-    manager = UserContext.get_users(id)
-
-    if manager != nil do
-      workingtimes = WorkingtimeContext.get_workingtimes_by_team_id(manager.team)
-      render(conn, "index.json", workintimes: workingtimes)
-    end
+  def indexTeam(conn, %{"teamID" => id}) do
+    workingtimes = WorkingtimeContext.get_workingtimes_by_team_id(id)
+    render(conn, "index.json", workintimes: workingtimes)
   end
-
 
   def showAll(conn, param) do
     userID = param["userID"]
@@ -45,13 +40,11 @@ defmodule ApiWeb.WorkingtimesController do
     end
   end
 
-
   def showOne(conn, %{"userID" => userID, "workingtimeID" => workingtimeID}) do
     workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_workingtime_id(userID, workingtimeID)
     IO.inspect(workingtimes)
     render(conn, "show.json", workingtimes: workingtimes)
   end
-
 
   def create(conn, %{"userID" => id, "workingtimes" => workingtimes_params}) do
     user = UserContext.get_users(id)
@@ -69,7 +62,6 @@ defmodule ApiWeb.WorkingtimesController do
     send_resp(conn, :no_content, "")
   end
 
-
   def update(conn, %{"id" => id, "workingtimes" => workingtimes_params}) do
     workingtimes = WorkingtimeContext.get_workingtimes!(id)
 
@@ -83,6 +75,48 @@ defmodule ApiWeb.WorkingtimesController do
 
     with {:ok, %Workingtimes{}} <- WorkingtimeContext.delete_workingtimes(workingtimes) do
       send_resp(conn, :no_content, "")
+    end
+  end
+
+  # TODO non adapter
+  def showTeamOne(conn, %{"start" => start, "end" => endd, "teamID" => teamID, "userID" => userID}) do
+    if start == nil do
+      if endd == nil do
+        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_team_id(userID, teamID)
+        render(conn, "index.json", workingtimes: workingtimes)
+      else
+        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_end_and_team_id(userID, endd, teamID)
+        render(conn, "index.json", workingtimes: workingtimes)
+      end
+    else
+      if endd == nil do
+        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_start_and_team_id(userID, start, teamID)
+        render(conn, "index.json", workingtimes: workingtimes)
+      else
+        workingtimes = WorkingtimeContext.get_workingtimes_by_user_id_and_start_and_end_and_team_id(userID, start, endd, teamID)
+        render(conn, "index.json", workingtimes: workingtimes)
+      end
+    end
+  end
+
+  # TODO non adapter
+  def showTeamAll(conn, %{"start" => start, "end" => endd, "teamID" => teamID}) do
+    if start == nil do
+      if endd == nil do
+        workingtimes = WorkingtimeContext.get_workingtimes_by_team_id(teamID)
+        render(conn, "index.json", workingtimes: workingtimes)
+      else
+        workingtimes = WorkingtimeContext.get_workingtimes_by_end_and_team_id(endd, teamID)
+        render(conn, "index.json", workingtimes: workingtimes)
+      end
+    else
+      if endd == nil do
+        workingtimes = WorkingtimeContext.get_workingtimes_by_start_and_team_id(start, teamID)
+        render(conn, "index.json", workingtimes: workingtimes)
+      else
+        workingtimes = WorkingtimeContext.get_workingtimes_by_start_and_end_and_team_id(start, endd, teamID)
+        render(conn, "index.json", workingtimes: workingtimes)
+      end
     end
   end
 end

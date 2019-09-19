@@ -16,8 +16,6 @@ defmodule ApiWeb.UsersView do
       email: users.email,
       role: users.role,
       team: users.team,
-      password_hash: users.password_hash,
-      token: users.token,
-      expiry: users.expiry}
+      password_hash: users.password_hash}
   end
 end

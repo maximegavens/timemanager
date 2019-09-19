@@ -12,15 +12,6 @@ defmodule ApiWeb.UsersController do
     render(conn, "index.json", users: users)
   end
 
-  def indexManager(conn, %{"managerID" => id}) do
-    manager = UserContext.get_users!(id)
-
-    if manager != nil do
-      users = UserContext.get_users_by_team(manager.team)
-      render(conn, "index.json", users: users)
-    end
-  end
-
   def show(conn, %{"userID" => id}) do
     users = UserContext.get_users!(id)
     render(conn, "show.json", users: users)
@@ -56,70 +47,50 @@ defmodule ApiWeb.UsersController do
 
   def signIn(conn, %{"email" => email, "password" => password}) do
     case sign_in(email, password) do
-      # TODO replace users by auth_token
-      {:ok, users} ->
-        IO.inspect(users)
+      {:ok, token} ->
         conn
         |> put_status(:ok)
-        |> render("show.json", users: users)
+        |> send_resp(200, token)
       {:error, reason} ->
         conn
         |> send_resp(401, reason)
     end
   end
 
-  def signOut(conn) do
-    case get_auth_token(conn) do
-      {:ok, token} ->
-        case UserContext.get_user_by_token(token) do
-          nil -> {:error, :not_found}
-          users ->
-            users_params = %{"token" => "", "expiry" => ""}
-            UserContext.update_users(users, users_params)
-            render(conn, "show.json", users: users)
-        end
-      error -> error
-    end
+  def signOut(conn, _params) do
+    send_resp(conn, :no_content, "")
   end
 
   def sign_in(email, password) do
     case Comeonin.Bcrypt.check_pass(UserContext.get_user_by_email(email), password) do
       {:ok, users} ->
-        {:ok, token, _claims} = Token.generate_and_sign()
         expiry = DateTime.add(DateTime.utc_now, 3600 * 24 * 30, :second)
-        case UserContext.update_token(users, %{"token" => token, "expiry" => expiry}) do
-          users -> users
-        end
+        {:ok, token, _claims} = Token.generate_and_sign(%{"user_id" => users.id, "role" => users.role, "expiry" => expiry})
+        IO.inspect(token)
+        IO.inspect(Api.Token.verify_and_validate(token))
+        {:ok, token}
       err -> err
     end
   end
 
-  def get_auth_token(conn) do
-    case extract_token(conn) do
-      {:ok, token} -> verify_token(token)
-      error -> error
+  def updateTeam(conn, %{"teamID" => teamID, "userID" => userID}) do
+    users = UserContext.get_users!(userID)
+
+    with {:ok, %Users{} = users} <- UserContext.update_team(users, teamID) do
+      render(conn, "show.json", users: users)
     end
   end
 
-  defp extract_token(conn) do
-    case Plug.Conn.get_req_header(conn, "authorization") do
-      [auth_header] -> get_token_from_header(auth_header)
-      _ -> {:error, :missing_auth_header}
+  def promote(conn, %{"userID" => userID}) do
+    users = UserContext.get_users!(userID)
+
+    with {:ok, %Users{} = users} <- UserContext.promote_user(users) do
+      render(conn, "show.json", users: users)
     end
   end
 
-  defp get_token_from_header(auth_header) do
-    {:ok, reg} = Regex.compile("Bearer\:?\s+(.*)$", "i")
-    case Regex.run(reg, auth_header) do
-      [_, match] -> {:ok, String.trim(match)}
-      _ -> {:error, "token not found"}
-    end
-  end
+  # swagger path
+  # swagger definition
+  # complete router
 
-  def verify_token(token) do
-    case Joken.Signer.verify(token, Joken.Signer.create("HS256", "secret")) do
-      {:ok, id} -> {:ok, token}
-      error -> error
-    end
-  end
 end

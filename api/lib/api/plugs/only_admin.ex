@@ -1,4 +1,4 @@
-defmodule Api.Plugs.Authenticate do
+defmodule Api.Plugs.OnlyAdmin do
 
   alias Api.RestrictService
 
@@ -9,7 +9,7 @@ defmodule Api.Plugs.Authenticate do
       {:ok, token} ->
         case Api.Token.verify_and_validate(token) do
           {:ok, claims} ->
-            case RestrictService.verify_token(claims) do
+            case RestrictService.verify_admin_access(claims) do
               {:ok} -> RestrictService.authorized(conn, token)
               {:error} -> RestrictService.unauthorized(conn)
             end
