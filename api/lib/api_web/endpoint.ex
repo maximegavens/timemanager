@@ -1,6 +1,17 @@
 defmodule ApiWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :api
 
+  token_with_default_plus_custom_claims = Api.Token.generate_and_sign
+
+  IO.inspect(token_with_default_plus_custom_claims)
+
+  li = Tuple.to_list(token_with_default_plus_custom_claims)
+
+  claims = Api.Token.verify_and_validate(Enum.at(li, 1))
+
+  IO.inspect(claims)
+
+
   socket "/socket", ApiWeb.UserSocket,
     websocket: true,
     longpoll: false

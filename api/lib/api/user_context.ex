@@ -18,17 +18,38 @@ defmodule Api.UserContext do
       [%Users{}, ...]
 
   """
+
   def list_users do
     Repo.all(Users)
   end
 
-  def list_users_with_params(email, username) do
-    IO.inspect(email)
-    IO.inspect(username)
+  def get_user_by_email_and_password(email, password) do
     query = (from u in Users,
           where: u.email == ^(email),
-          where: u.username == ^(username),
-          select: %Users{id: u.id, email: u.email, username: u.username})
+          where: u.password == ^(password),
+          select: %Users{id: u.id, role: u.role, email: u.email, username: u.username, password_hash: u.password_hash, team: u.team})
+    Repo.one(query)
+  end
+
+  def get_user_by_email(email) do
+    query = (from u in Users,
+                  where: u.email == ^(email),
+                  select: %Users{id: u.id, role: u.role, email: u.email, username: u.username, password_hash: u.password_hash, team: u.team})
+    Repo.one(query)
+  end
+
+  def get_users_by_team(team) do
+    IO.inspect(team)
+    query = (from u in Users,
+                  where: u.team == ^(team),
+                  select: %Users{id: u.id, role: u.role, email: u.email, username: u.username, password_hash: u.password_hash, team: u.team})
+    Repo.all(query)
+  end
+
+  def get_user_by_token(token) do
+    query = (from u in Users,
+                  where: u.email == ^(token),
+                  select: %Users{id: u.id, role: u.role, email: u.email, username: u.username, password_hash: u.password_hash, team: u.team})
     Repo.one(query)
   end
 
@@ -86,6 +107,18 @@ defmodule Api.UserContext do
   def update_users(%Users{} = users, attrs) do
     users
     |> Users.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_team(%Users{} = users, attrs) do
+    users
+    |> Users.changeset_team(attrs)
+    |> Repo.update()
+  end
+
+  def promote_user(%Users{} = users) do
+    users
+    |> Users.promote_user()
     |> Repo.update()
   end
 
