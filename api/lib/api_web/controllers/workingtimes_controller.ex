@@ -17,8 +17,8 @@ defmodule ApiWeb.WorkingtimesController do
     render(conn, "index.json", workintimes: workingtimes)
   end
 
-  def showAll(conn, param) do
-    userID = param["userID"]
+  def showMine(conn, param) do
+    userID = Api.RestrictService.extract_user_id(conn)
     start = param["start"]
     endd = param["end"]
     if start == nil do

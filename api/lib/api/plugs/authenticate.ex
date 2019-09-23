@@ -13,7 +13,7 @@ defmodule Api.Plugs.Authenticate do
               {:ok} -> RestrictService.authorized(conn, token)
               {:error} -> RestrictService.unauthorized(conn)
             end
-          {:error} -> RestrictService.unauthorized(conn)
+          {:error, _default} -> RestrictService.unauthorized(conn)
         end
       _ -> RestrictService.unauthorized(conn)
     end

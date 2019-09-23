@@ -17,24 +17,52 @@ defmodule ApiWeb.UsersController do
     render(conn, "show.json", users: users)
   end
 
-  def update(conn, %{"userID" => id, "users" => users_params}) do
-    users = UserContext.get_users!(id)
+  def showMine(conn, _param) do
+    user_id = Api.RestrictService.extract_user_id(conn)
+    users = UserContext.get_users!(user_id)
+    render(conn, "show.json", users: users)
+  end
+
+  def showTeam(conn, %{"teamID" => teamID}) do
+    users = UserContext.get_users_by_team(teamID)
+    render(conn, "show.json", users: users)
+  end
+
+
+  def updateMine(conn, %{"users" => users_params}) do
+    user_id = Api.RestrictService.extract_user_id(conn)
+    users = UserContext.get_users!(user_id)
 
     with {:ok, %Users{} = users} <- UserContext.update_users(users, users_params) do
       render(conn, "show.json", users: users)
     end
   end
 
-  def delete(conn, %{"userID" => id}) do
-    users = UserContext.get_users!(id)
+  def deleteMine(conn, _param) do
+    user_id = Api.RestrictService.extract_user_id(conn)
+    users = UserContext.get_users!(user_id)
 
     with {:ok, %Users{}} <- UserContext.delete_users(users) do
       send_resp(conn, :no_content, "")
     end
   end
 
+  def deleteOne(conn, %{"userID" => id}) do
+    role = Api.RestrictService.extract_role(conn)
+
+    if role == "admin" || role == "general manager" do
+      users = UserContext.get_users!(id)
+      with {:ok, %Users{}} <- UserContext.delete_users(users) do
+        send_resp(conn, :no_content, "")
+      end
+    else
+      Api.RestrictService.unauthorized(conn)
+    end
+  end
 
   def signUp(conn, %{"users" => users_params}) do
+    IO.inspect(users_params)
+    IO.inspect(users_params["role"])
 
     with {:ok, %Users{} = users} <- UserContext.create_users(users_params) do
       IO.inspect(users)
@@ -58,6 +86,8 @@ defmodule ApiWeb.UsersController do
   end
 
   def signOut(conn, _params) do
+    IO.inspect(conn)
+    put_req_header(conn, "authorization", "")
     send_resp(conn, :no_content, "")
   end
 
@@ -66,8 +96,6 @@ defmodule ApiWeb.UsersController do
       {:ok, users} ->
         expiry = DateTime.add(DateTime.utc_now, 3600 * 24 * 30, :second)
         {:ok, token, _claims} = Token.generate_and_sign(%{"user_id" => users.id, "role" => users.role, "expiry" => expiry})
-        IO.inspect(token)
-        IO.inspect(Api.Token.verify_and_validate(token))
         {:ok, token}
       err -> err
     end

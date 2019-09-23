@@ -11,9 +11,13 @@
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
             <b-nav-item @click="widget = 'home'">Home</b-nav-item>
-            <b-nav-item @click="widget = 'dashboard'">My dashboard</b-nav-item>
+            <b-nav-item @click="viewMyDashboard">My dashboard</b-nav-item>
             <b-nav-item @click="widget = 'team'">Manage my teams</b-nav-item>
-            <b-nav-item><b-button variant="warning" size="sm" @click="timePoint">time point</b-button></b-nav-item>
+
+            <b-nav-item v-if="logState === 'success'">
+              <b-button v-if="myLastClock.status" variant="danger" size="sm" @click="timePoint">clock out (last clock'in {{myLastClock.time}})</b-button>
+              <b-button v-else variant="success" size="sm" @click="timePoint">clock in (last clock'out {{myLastClock.time}})</b-button>
+            </b-nav-item>
           </b-navbar-nav>
 
           <b-navbar-nav class="ml-auto">
@@ -24,9 +28,9 @@
 
             <b-nav-item-dropdown v-if="logState === 'success'" right>
               <template v-slot:button-content>
-                <em>{{logUsername}}</em>
+                <em>User</em>
               </template>
-              <b-dropdown-item @click="widget = 'profile'">Profile</b-dropdown-item>
+              <b-dropdown-item @click="viewMyProfile">Profile</b-dropdown-item>
               <b-dropdown-item v-if="logState === 'success'" @click="logout">Log out</b-dropdown-item>
             </b-nav-item-dropdown>
           </b-navbar-nav>
@@ -68,21 +72,42 @@ export default {
       widget: 'home',
     }
   },
+  created() {
+    this.$store.dispatch('init')
+    this.$store.dispatch('lastClock')
+            .then(resp => console.log(resp))
+            .catch(err => console.log(err))
+    console.log(this.$store.state.status)
+  },
   computed : {
-    isLoggedIn : function(){ return this.$store.getters.isLoggedIn},
     logState: function(){ return this.$store.state.status},
-    logUsername: function(){ return this.$store.state.user.username},
+    myProfile: function(){ return this.$store.state.myProfile},
+    myLastClock: function(){ return this.$store.state.myLastClock},
+    myToken: function(){ return this.$store.state.token},
 
   },
   methods: {
     logout: function () {
       this.$store.dispatch('logout')
-              .then(resp => {console.log(resp); this.componentState = this.$store.state.status; console.log(this.componentState)})
+              .then(resp => {console.log(resp)})
+              .catch(err => console.log(err))
     },
     timePoint: function () {
-      this.$store.dispatch('clock', this.$store.state.user.id)
+      this.$store.dispatch('clock')
               .then(resp => console.log(resp))
-    }
+              .catch(err => console.log(err))
+    },
+    viewMyProfile: function () {
+      this.$store.dispatch('profile')
+              .then(() => this.widget = 'profile')
+              .catch(err => console.log(err))
+    },
+    viewMyDashboard: function () {
+      this.$store.dispatch('dashboard')
+              .then(() => this.widget = 'dashboard')
+              .catch(err => {console.log(err);
+              console.log(this.$store.state.status);})
+    },
   },
   components: {
     Authentification,

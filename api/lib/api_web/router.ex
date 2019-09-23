@@ -40,18 +40,20 @@ defmodule ApiWeb.Router do
     # route access connected user
     pipe_through :api
     pipe_through :authenticate
-    put "/users/:userID", UsersController, :update                                        # 1) Edit their account information.
-    delete "/users/:userID", UsersController, :delete                                     # 2) Delete their account. 11) Delete accounts from all users.
-    get "/workingtimes/:userID", WorkingtimesController, :showAll                         # 4) View their dashboards.
-    post "/clocks/:userID", ClocksController, :create                                     # 3) Report their departure and arrival times.
+    get "/users", UsersController, :showMine                                              # view account information
+    put "/users", UsersController, :updateMine                                            # 1) Edit their account information.
+    delete "/users", UsersController, :deleteMine                                         # 2) Delete their account.
+    get "/workingtimes", WorkingtimesController, :showMine                                # 4) View their dashboards.
+    post "/clocks", ClocksController, :create                                             # 3) Report their departure and arrival times.
+    get "/clocks", ClocksController, :showMine                                            # view their last clock
     get "/users/sign_out", UsersController, :signOut                                      # to log out
   end
-
   scope "/api", ApiWeb do
     # route access manager
     pipe_through :api
     pipe_through :authenticate
     pipe_through :manager
+    get "/users/team/:teamID", UsersController, :showTeam                                 # view my team account information
     put "/users/:userID/team/:teamID", UsersController, :updateTeam                       # 5) Manage their team(s). (change user.team by teamID)
     get "/workingtimes/:userID/team/:teamID", WorkingtimesController, :showTeamOne        # 7) View the daily and weekly working hours of an employee over a period of time.
     get "/workingtimes/team/:teamID", WorkingtimesController, :showTeamAll                # 6) View the averages of the daily and weekly hours of the team over a given period. 8) View their employees’ dashboards .
@@ -63,9 +65,8 @@ defmodule ApiWeb.Router do
     pipe_through :authenticate
     pipe_through :general
     put "/users/promote/:userID", UsersController, :promote                                # 9) Promote a user from the rank of employee to manager.
-    get "/workingtimes", WorkingtimesController, :index                                    # 10) View the dashboards of all users.
-    get "/users", UsersController, :index                                                  # 11) view all users
-    get "/users/:userID", UsersController, :show                                           # view one user
+    get "/workingtimes/all", WorkingtimesController, :index                                # 10) View the dashboards of any users.
+    delete "/users/:userID", UsersController, :deleteOne                                   # 11) Delete accounts of any users.
   end
 
   scope "/api", ApiWeb do
@@ -73,11 +74,14 @@ defmodule ApiWeb.Router do
     pipe_through :api
     pipe_through :authenticate
     pipe_through :admin
-    get "/clocks/:userID", ClocksController, :index                                        # view all user's clock
+    get "/clocks/users/:userID", ClocksController, :index                                  # view all user's clock
+    get "/clocks/:id", ClocksController, :show                                             # viex one clock
     get "/workingtimes/:userID/:workingtimeID", WorkingtimesController, :showOne           # view one workingtime
     post "/workingtimes/:userID", WorkingtimesController, :create                          # create workingtime
     put "/workingtimes/:id", WorkingtimesController, :update                               # update workingtime
     delete "/workingtimes/:id", WorkingtimesController, :delete                            # delete workingtime
+    get "/users/all", UsersController, :index                                              # view all users
+    get "/users/:userID", UsersController, :show                                           # view one user
   end
 
   def swagger_info do

@@ -8,69 +8,159 @@ Vue.use(Vuex)
 // eslint-disable-next-line
 let store = new Vuex.Store({
     state: {
-        status: '',
         token: localStorage.getItem('token') || '',
+        status: '',
         user : {},
+        myProfile: {},
+        myTeamProfile: [],
+        myAllProfile: [],
 
-        clockIn: false,
-        startDateTime: '',
+        myLastClock: {},
 
-        workingtimes: [],
+        myWorkingtimes: [],
+        myTeamWorkingtimes: [],
+        myAllWorkingtimes: [],
     },
     mutations: {
-        auth_request(state){
-            state.status = 'loading'
-        },
-        auth_success(state, data){
-            state.status = 'success'
-            state.token = data[0]
-            state.user = data[1]
-        },
-        auth_error(state){
-            state.status = 'error'
-        },
-        logout(state){
+        clear_state(state) {
             state.status = ''
-            state.token = ''
+            state.token = localStorage.getItem('token') || ''
+            state.user = {}
+            state.myProfile = {}
+            state.myTeamProfile = []
+            state.myAllProfile = []
+            state.clockIn = false
+            state.startDateTime = ''
+            state.myWorkingtimes = []
+            state.myTeamProfile = []
+            state.myAllWorkingtimes = []
         },
-        clock_request(state){
-            state.clockIn = state
-        },
-        clock_success(state, data){
-            state.clockIn = state
-            state.startDateTime = data
-        },
-        clock_error(state, data){
-            state.status = 'error'
-        },
-        workingtime_request(state){
+        request_load(state){
             state.status = 'loading'
         },
-        workingtime_success(state, data){
+        request_success(state){
             state.status = 'success'
-            state.workingtimes = data
         },
-        workingtime_error(state, data){
-            state.status = 'error'
+        request_error(state){
+            state.status = ''
         },
+        profile_success(state, data){
+            state.status = 'success'
+            state.myProfile = data
+        },
+        team_profile_success(state, data){
+            state.status = 'success'
+            state.myTeamProfile = data
+        },
+        all_profile_success(state, data){
+            state.status = 'success'
+            state.myAllProfile = data
+        },
+        workingtimes_success(state, data){
+            state.status = 'success'
+            state.myWorkingtimes = data
+        },
+        change_success(state, data){
+            state.status = 'success'
+            state.myProfile = data
+        },
+        clock_success(state, data) {
+            state.state = 'success'
+            state.myLastClock = data
+        },
+        last_clock_success(state, data) {
+            state.status = 'success'
+            state.myLastClock = data
+        }
     },
     actions: {
+        init() {
+            axios.defaults.headers.common['Authorization'] = localStorage.getItem('token') || ''
+        },
         login({commit}, user){
-            const ApiUrl = "http://localhost:4000/api/users?email=" + user.email + "&password=" + user.password
+            const ApiUrl = "http://localhost:4000/api/users/sign_in"
             return new Promise((resolve, reject) => {
-                commit('auth_request')
-                axios.get(ApiUrl)
+                axios.post(ApiUrl, {email: user.email, password: user.password})
                     .then(resp => {
-                        const token = resp.data.data.id
-                        const user = resp.data.data
+                        const token = resp.data
                         localStorage.setItem('token', token)
-                        //axios.defaults.headers.common['Authorization'] = token
-                        commit('auth_success', [token, user])
+                        axios.defaults.headers.common['Authorization'] = token
+                        this.token = token
+                        commit('request_success')
                         resolve(resp)
                     })
                     .catch(err => {
-                        commit('auth_error')
                         localStorage.removeItem('token')
+                        reject(err)
+                    })
+            })
+        },
+        lastClock({commit}) {
+            const ApiUrl = "http://localhost:4000/api/clocks"
+            return new Promise((resolve, reject) => {
+                axios.get(ApiUrl)
+                    .then(resp => {
+                        const clock = resp.data.data
+                        commit('last_clock_success', clock)
+                        resolve(resp)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
+        profile({commit}) {
+            const ApiUrl = "http://localhost:4000/api/users"
+            return new Promise((resolve, reject) => {
+                axios.get(ApiUrl)
+                    .then(resp => {
+                        const data = resp.data.data
+                        commit('profile_success', data)
+                        resolve(data)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
+        teamProfile({commit, teamId}) {
+            const ApiUrl = "http://localhost:4000/api/users/team"
+            return new Promise((resolve, reject) => {
+                axios.get(ApiUrl, {teamID: teamID})
+                    .then(resp => {
+                        const data = resp.data.data
+                        commit('team_profile_success', data)
+                        resolve(data)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
+        allProfile({commit}) {
+            const ApiUrl = "http://localhost:4000/api/users/all"
+            return new Promise((resolve, reject) => {
+                axios.get(ApiUrl)
+                    .then(resp => {
+                        const data = resp.data.data
+                        commit('all_profile_success', data)
+                        resolve(data)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
+        dashboard({commit}){
+            const ApiUrl = "http://localhost:4000/api/workingtimes"
+            return new Promise((resolve, reject) => {
+                axios.get(ApiUrl)
+                    .then(resp => {
+                        const data = resp.data.data
+                        commit('workingtimes_success', data)
+                        resolve(data)
+                    })
+                    .catch(err => {
                         reject(err)
                     })
             })
@@ -78,85 +168,84 @@ let store = new Vuex.Store({
         register({commit}, user){
             const ApiUrl = "http://localhost:4000/api/users"
             return new Promise((resolve, reject) => {
-                commit('auth_request')
                 axios.post(ApiUrl, {users: user})
                     .then(resp => {
-                        console.log(resp.data)
                         const token = resp.data.data.id
                         const user = resp.data.data
                         localStorage.setItem('token', token)
-                        commit('auth_success', [token, user])
+                        commit('request_success', [token, user])
                         resolve(resp)
                     })
                     .catch(err => {
-                        commit('auth_error', err)
                         localStorage.removeItem('token')
                         reject(err)
                     })
             })
         },
         change({commit}, user){
-            const ApiUrl = "http://localhost:4000/api/users/" + user.id
+            const ApiUrl = "http://localhost:4000/api/users"
             return new Promise((resolve, reject) => {
-                commit('auth_request')
                 axios.put(ApiUrl, {users: user})
                     .then(resp => {
-                        console.log(resp.data)
-                        const token = resp.data.data.id
-                        const user = resp.data.data
-                        localStorage.setItem('token', token)
-                        commit('auth_success', [token, user])
-                        resolve(resp)
+                        const data = resp.data.data
+                        commit('change_success', data)
+                        resolve(data)
                     })
                     .catch(err => {
-                        commit('auth_error', err)
                         localStorage.removeItem('token')
                         reject(err)
                     })
             })
         },
-        logout({commit}){
+        delete({commit}) {
+            const ApiUrl = "http://localhost:4000/api/users"
             return new Promise((resolve, reject) => {
-                commit('logout')
-                localStorage.removeItem('token')
-                //delete axios.defaults.headers.common['Authorization']
-                resolve()
-            })
-        },
-        clock({commit}, userId){
-            const ApiUrl = "http://localhost:4000/api/clocks/" + userId.toString()
-            return new Promise((resolve, reject) => {
-                commit('clock_request')
-                axios.post(ApiUrl)
+                axios.delete(ApiUrl)
                     .then(resp => {
-                        console.log(resp.data)
-                        //const WT = resp.data.data
-                        //commit('in', resp)
+                        localStorage.removeItem('token')
+                        delete axios.defaults.headers.common['Authorization']
+                        commit('clear_state')
                         resolve(resp)
                     })
                     .catch(err => {
-                        console.log(err)
-                        //commit('clock_error')
+                        localStorage.removeItem('token')
                         reject(err)
                     })
             })
         },
-        getWorkingtimes({commit}, userId){
-            const ApiUrl = "http://localhost:4000/api/workingtimes/" + userId.toString()
+        logout({commit}) {
+            const ApiUrl = "http://localhost:4000/api/users/sign_out"
             return new Promise((resolve, reject) => {
-                commit('workingtime_request')
                 axios.get(ApiUrl)
                     .then(resp => {
-                        const WT = resp.data.data
-                        commit('workingtime_success', WT)
-                        resolve(WT)
+                        localStorage.removeItem('token')
+                        delete axios.defaults.headers.common['Authorization']
+                        commit('clear_state')
+                        resolve(resp)
                     })
                     .catch(err => {
-                        commit('workingtime_error')
+                        localStorage.removeItem('token')
                         reject(err)
                     })
             })
         },
+        clock({commit}){
+            const ApiUrl = "http://localhost:4000/api/clocks/"
+            return new Promise((resolve, reject) => {
+                axios.post(ApiUrl)
+                    .then(resp => {
+                        const clock = resp.data.data
+                        commit('clock_success', clock)
+                        resolve(resp)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
+        clear({commit}) {
+            commit('clear_state')
+        }
     },
     getters : {
         isLoggedIn: state => !!state.token,

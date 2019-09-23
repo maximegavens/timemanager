@@ -13,11 +13,19 @@ defmodule ApiWeb.ClocksController do
     render(conn, "index.json", clocks: clocks)
   end
 
-  def create(conn, %{"userID" => id}) do
-    user = UserContext.get_users(id)
+  def showMine(conn, _param) do
+    user_id = Api.RestrictService.extract_user_id(conn)
+    previousClock = ClockContext.get_previous_clock_by_user_id(user_id)
+    render(conn, "show.json", clocks: previousClock)
+  end
+
+  def create(conn, _param) do
+    user_id = Api.RestrictService.extract_user_id(conn)
+    user = UserContext.get_users!(user_id)
+
     # TODO CONFIG PARIS DATETIME
     time = NaiveDateTime.utc_now
-    previousClock = ClockContext.get_previous_clock_by_user_id(id)
+    previousClock = ClockContext.get_previous_clock_by_user_id(user_id)
     if previousClock == nil do
       clocks_params = %{"time" => time, "status" => true}
 

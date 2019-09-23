@@ -7,6 +7,27 @@ defmodule Api.RestrictService do
     end
   end
 
+  def extract_role(conn) do
+    case extract_token(conn) do
+      {:ok, token} ->
+      IO.inspect(token)
+        case Api.Token.verify_and_validate(token) do
+          {:ok, claims} -> claims["role"]
+        end
+    end
+  end
+
+  def extract_user_id(conn) do
+    case extract_token(conn) do
+      {:ok, token} ->
+        IO.inspect(token)
+        case Api.Token.verify_and_validate(token) do
+          {:ok, claims} -> claims["user_id"]
+        end
+    end
+  end
+
+
   def verify_token(claims) do
     {:ok, expiry} = NaiveDateTime.from_iso8601(claims["expiry"])
     if NaiveDateTime.compare(expiry , DateTime.utc_now) == :gt do

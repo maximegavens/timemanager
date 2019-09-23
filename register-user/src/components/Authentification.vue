@@ -73,7 +73,7 @@
                 id: -1,
                 errors: [],
                 storeContent: this.$store.state,
-                logState: ''
+                logState: '',
             }
         },
         computed : {
@@ -81,15 +81,14 @@
         },
         methods: {
             getUser () {
-                this.errors = [];
                 this.$store.dispatch('login', {email: this.email, password: this.password})
-                    .then(() => this.logState = 'profile')
+                    .then(() => {this.$store.dispatch('lastClock').then(resp => console.log(resp));})
                     .catch(err => console.log(err))
             },
             createUser() {
                 this.errors = [];
                 this.$store.dispatch('register', {email: this.email, username: this.username, username: this.username, status: this.status, team: this.team})
-                    .then(() => this.logState = 'login')
+                    .then(resp => this.logState = 'login')
                     .catch(err => console.log(err))
             },
         }
