@@ -25,7 +25,7 @@ defmodule ApiWeb.UsersController do
 
   def showTeam(conn, %{"teamID" => teamID}) do
     users = UserContext.get_users_by_team(teamID)
-    render(conn, "show.json", users: users)
+    render(conn, "index.json", users: users)
   end
 
 
@@ -104,7 +104,7 @@ defmodule ApiWeb.UsersController do
   def updateTeam(conn, %{"teamID" => teamID, "userID" => userID}) do
     users = UserContext.get_users!(userID)
 
-    with {:ok, %Users{} = users} <- UserContext.update_team(users, teamID) do
+    with {:ok, %Users{} = users} <- UserContext.update_team(users, %{"team" => teamID}) do
       render(conn, "show.json", users: users)
     end
   end

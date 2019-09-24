@@ -71,6 +71,9 @@ let store = new Vuex.Store({
         last_clock_success(state, data) {
             state.status = 'success'
             state.myLastClock = data
+        },
+        change_team_success(state) {
+            state.status = 'success'
         }
     },
     actions: {
@@ -123,12 +126,13 @@ let store = new Vuex.Store({
                     })
             })
         },
-        teamProfile({commit, teamId}) {
-            const ApiUrl = "http://localhost:4000/api/users/team"
+        teamProfile({commit}, teamId) {
+            const ApiUrl = "http://localhost:4000/api/users/team/" + teamId
             return new Promise((resolve, reject) => {
-                axios.get(ApiUrl, {teamID: teamID})
+                axios.get(ApiUrl)
                     .then(resp => {
                         const data = resp.data.data
+                        console.log(data)
                         commit('team_profile_success', data)
                         resolve(data)
                     })
@@ -158,6 +162,33 @@ let store = new Vuex.Store({
                     .then(resp => {
                         const data = resp.data.data
                         commit('workingtimes_success', data)
+                        resolve(data)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
+        selectedTeamMateHours({commit}, param){
+            const ApiUrl = "http://localhost:4000/api/workingtimes/" + param.userId + "/team/" + param.teamId
+            return new Promise((resolve, reject) => {
+                axios.get(ApiUrl)
+                    .then(resp => {
+                        const data = resp.data.data
+                        resolve(data)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
+        changeTeam({commit}, param){
+            const ApiUrl = "http://localhost:4000/api/users/" + param.userId + "/team/" + param.teamId
+            return new Promise((resolve, reject) => {
+                axios.put(ApiUrl)
+                    .then(resp => {
+                        const data = resp.data.data
+                        commit('change_team_success', data)
                         resolve(data)
                     })
                     .catch(err => {

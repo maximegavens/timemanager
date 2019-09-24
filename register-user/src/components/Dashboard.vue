@@ -25,8 +25,6 @@
                                 </b-col>
                             </b-row>
                         </li>
-                        <li>
-                        </li>
                         <li class="nav-item">
                             <b-row>
                                 <b-col sm="3">
@@ -40,7 +38,21 @@
                         <li class="nav-item">
                             <b-row>
                                 <b-col sm="3">
-                                    submit
+                                </b-col>
+                                <b-col sm="9">
+                                    <div>
+                                        <b-button-group>
+                                            <b-button @click="graphicFormat = 'line'">Line</b-button>
+                                            <b-button @click="graphicFormat = 'bar'">Bar</b-button>
+                                            <b-button @click="graphicFormat = 'area'">Area</b-button>
+                                        </b-button-group>
+                                    </div>
+                                </b-col>
+                            </b-row>
+                        </li>
+                        <li class="nav-item">
+                            <b-row>
+                                <b-col sm="3">
                                 </b-col>
                                 <b-col sm="9">
                                     <b-button @click="updateData">submit</b-button>
@@ -52,64 +64,53 @@
             </nav>
             <div class="col-md-10" role="main">
                 <line-chart
+                        v-if="graphicFormat === 'line'"
                         id="lineTest"
                         :data="lineDataTest"
                         xkey="date"
                         ykeys='[ "sum" ]'
                         resize="true"
-                        labels='[ "Serie test" ]'
-                        line-colors='[ "#FF0084" ]'
+                        labels='[ "working hours" ]'
+                        line-colors='[ "#0000FF" ]'
                         grid="true"
-                        grid-text-weight="bold">
+                        grid-text-weight="bold"
+                        smooth="false">
                 </line-chart>
-                <b-table striped hover :items="workingtimes" :fields="fields"></b-table>
+                <bar-chart
+                        v-if="graphicFormat === 'bar'"
+                        id="bar"
+                        :data="lineDataTest"
+                        xkey="date"
+                        ykeys='[ "sum" ]'
+                        resize="true"
+                        labels='[ "working hours" ]'
+                        bar-colors='[ "#FF6384" ]'
+                        grid="true"
+                        grid-text-weight="bold"
+                        dateFormat>
+                </bar-chart>
+                <area-chart
+                        v-if="graphicFormat === 'area'"
+                        id="area"
+                        :data="lineDataTest"
+                        xkey="date"
+                        ykeys='[ "sum" ]'
+                        resize="true"
+                        labels='[ "working hours" ]'
+                        line-colors='[ "#FF6384" ]'
+                        grid="true"
+                        grid-text-weight="bold"
+                        hide-hover="always">
+                </area-chart>
+                <b-table style="margin-top: 20px" striped hover :items="workingtimes" :fields="fields"></b-table>
             </div>
         </div>
-
-
-
         <!--<donut-chart
                 id="donut"
                 :data="donutData"
                 colors='[ "#FF6384", "#36A2EB", "#FFCE56" ]'
                 resize="true">
         </donut-chart>-->
-        <!--<line-chart
-                id="line"
-                :data="lineData"
-                xkey="year"
-                ykeys='[ "a", "b" ]'
-                resize="true"
-                labels='[ "Serie A", "Serie B" ]'
-                line-colors='[ "#FF0084", "#36A2EB" ]'
-                grid="true"
-                grid-text-weight="bold">
-        </line-chart>-->
-
-        <!--<bar-chart
-                id="bar"
-                :data="barData"
-                xkey="year"
-                ykeys='[ "and", "ios", "win" ]'
-                resize="true"
-                labels='[ "Android", "iOS", "Windows" ]'
-                bar-colorssss='[ "#FF6384", "#36A2EB", "#FFCE56" ]'
-                :bar-colors="osColors"
-                grid="true"
-                grid-text-weight="bold">
-        </bar-chart>
-        <area-chart
-                id="area"
-                :data="areaData"
-                xkey="year"
-                ykeys='[ "a", "b" ]'
-                resize="true"
-                labels='[ "Serie A", "Serie B" ]'
-                line-colors='[ "#FF6384", "#36A2EB" ]'
-                grid="true"
-                grid-text-weight="bold"
-                hide-hover="always">
-        </area-chart>-->
     </div>
 </template>
 
@@ -123,8 +124,10 @@
     import vuejsDatepicker from 'vuejs-datepicker';
     export default {
         name: "Dashboard",
+        props: ['passWorkingtimes'],
         data() {
             return {
+                graphicFormat: "line",
                 error: [],
                 selected: null,
                 options: [
@@ -135,7 +138,7 @@
                 start: null,
                 end: null,
 
-                workingtimes: this.$store.state.myWorkingtimes,
+                workingtimes: this.passWorkingtimes,
                 fields: [
                     {
                         key: "start",
@@ -154,26 +157,17 @@
                     { label: 'Blue', value: 50 },
                     { label: 'Yellow', value: 100 }
                 ],
-                barData: [
-                    { year: '2013', and: 10, ios: 5, win: 2 },
-                    { year: '2014', and: 10, ios: 15, win: 3 },
-                    { year: '2015', and: 20, ios: 25, win: 2 },
-                    { year: '2016', and: 30, ios: 20, win: 1 },
-                ],
-                lineData: [
-                    { year: '2013', a: 10, b: 5 },
-                    { year: '2014', a: 40, b: 15 },
-                    { year: '2015', a: 20, b: 25 },
-                    { year: '2016', a: 30, b: 20 },
-                ],
-                areaData: [
-                    { year: '2013', a: 30, b: 5 },
-                    { year: '2014', a: 25, b: 15 },
-                    { year: '2015', a: 29, b: 25 },
-                    { year: '2016', a: 50, b: 20 },
-                ],
                 lineDataTest: []
             }
+        },
+        created() {
+            if (this.workingtimes == null) {
+                this.workingtimes = this.$store.state.myWorkingtimes
+            }
+            this.end = this.dateToDatePickerFormat(new Date())
+            this.start = this.dateToDatePickerFormat(new Date(new Date() - 7 * 24 * 3600 * 1000))
+            this.selected = "D"
+            this.updateData()
         },
         methods: {
             getCurrentDate(isoDate) {
@@ -183,6 +177,12 @@
                 const d = a.getDate() < 10 ? "0" + a.getDate().toString() : a.getDate().toString()
                 const c = new Date(y + "-" + m + "-" + d)
                 return c
+            },
+            dateToDatePickerFormat(a) {
+                const y = a.getFullYear().toString()
+                const m = a.getMonth() + 1 < 10 ? "0" + (a.getMonth() + 1).toString() : (a.getMonth() + 1).toString()
+                const d = a.getDate() < 10 ? "0" + a.getDate().toString() : a.getDate().toString()
+                return y + "-" + m + "-" + d
             },
             calculWorkingtimeForGivenDate(givenDate, period, start, end) {
                 const GDprevious = this.addDays(givenDate, period)
@@ -224,7 +224,6 @@
                 }
                 this.lineDataTest = []
                 let dateStart = new Date(this.start)
-                console.log(dateStart)
                 let dateEnd = new Date(this.end)
                 if (dateStart != null && dateEnd != null) {
                     if (dateStart >= dateEnd) {
@@ -241,7 +240,6 @@
                         this.lineDataTest.push({date: n.getTime(), sum: (sum / 1000) / 3600})
                         n = this.addDays(n, period)
                     }
-                    console.log(this.lineDataTest)
                 }
             },
 

@@ -31,7 +31,9 @@ defmodule Api.WorkingtimeContext do
     query = (from u in Workingtimes,
                   where: u.user_id == ^(userID),
                   select: %Workingtimes{id: u.id, start: u.start, end: u.end, user_id: u.user_id})
-    Repo.all(query)
+    query
+    |> Repo.all()
+    |> Repo.preload(:user)
   end
 
   def get_workingtimes_by_user_id_and_start(userID, start) do

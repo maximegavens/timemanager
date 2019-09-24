@@ -12,11 +12,16 @@
           <b-navbar-nav>
             <b-nav-item @click="widget = 'home'">Home</b-nav-item>
             <b-nav-item @click="viewMyDashboard">My dashboard</b-nav-item>
-            <b-nav-item @click="widget = 'team'">Manage my teams</b-nav-item>
+            <b-nav-item @click="viewMyTeamProfile">Manage my teams</b-nav-item>
 
             <b-nav-item v-if="logState === 'success'">
-              <b-button v-if="myLastClock.status" variant="danger" size="sm" @click="timePoint">clock out (last clock'in {{myLastClock.time}})</b-button>
-              <b-button v-else variant="success" size="sm" @click="timePoint">clock in (last clock'out {{myLastClock.time}})</b-button>
+              <div v-if="myLastClock != null">
+                <b-button v-if="myLastClock.status" variant="danger" size="sm" @click="timePoint">clock out (last clock'in {{myLastClock.time}})</b-button>
+                <b-button v-else variant="success" size="sm" @click="timePoint">clock in (last clock'out {{myLastClock.time}})</b-button>
+              </div>
+              <div v-else>
+                <b-button variant="success" size="sm" @click="timePoint">clock in</b-button>
+              </div>
             </b-nav-item>
           </b-navbar-nav>
 
@@ -48,6 +53,9 @@
       <div v-if="widget === 'profile'">
         <profile></profile>
       </div>
+      <div v-if="widget === 'team'">
+        <team></team>
+      </div>
     </div>
 
     <div v-if="logState === ''">
@@ -64,6 +72,7 @@
   import Gotham from "./components/Gotham"
   import Profile from "./components/Profile"
   import Dashboard from "./components/Dashboard"
+  import Team from "./components/Team"
 export default {
   name: 'app',
   data() {
@@ -77,12 +86,13 @@ export default {
     this.$store.dispatch('lastClock')
             .then(resp => console.log(resp))
             .catch(err => console.log(err))
-    console.log(this.$store.state.status)
   },
   computed : {
     logState: function(){ return this.$store.state.status},
     myProfile: function(){ return this.$store.state.myProfile},
-    myLastClock: function(){ return this.$store.state.myLastClock},
+    myLastClock: function(){
+      console.log(this.$store.state.myLastClock);
+      return this.$store.state.myLastClock;},
     myToken: function(){ return this.$store.state.token},
 
   },
@@ -108,12 +118,26 @@ export default {
               .catch(err => {console.log(err);
               console.log(this.$store.state.status);})
     },
+    viewMyTeamProfile: function () {
+      this.$store.dispatch('profile')
+              .then(() => {
+                this.$store.dispatch('teamProfile', this.$store.state.myProfile.team)
+                        .then(resp => console.log(resp))
+                        .catch(err => console.log(err))
+                this.$store.dispatch('allProfile')
+                        .then(() => this.widget = 'team')
+                        .catch(err => console.log(err))
+              })
+              .catch(err => console.log(err))
+
+    },
   },
   components: {
     Authentification,
     Gotham,
     Profile,
     Dashboard,
+    Team,
   }
 }
 </script>
