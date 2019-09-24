@@ -11,7 +11,7 @@ import {
   AsyncStorage,
 } from 'react-native';
 import axios from 'axios';
-import BgImage from '../../../assets/Gotham_city.png';
+import BgImage from '../../../assets/Gotham_City.png';
 import Logo from '../../../assets/logo.png';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -40,13 +40,13 @@ class SignInScreen extends Component {
 
   handleLogin = async () => {
     axios
-      .post('https://sport-analytica.com/api/login', {
+      .post('http://localhost:4000/api/users/sign_in', {
         email: this.state.email,
         password: this.state.password,
       })
       .then(res => {
         console.log(res.data);
-        AsyncStorage.setItem('token', res.data.token);
+        AsyncStorage.setItem('token', res.data);
         this.props.navigation.navigate('App');
       })
       .catch(err => console.log(err));
@@ -57,7 +57,7 @@ class SignInScreen extends Component {
       <ImageBackground source={BgImage} style={styles.backgroundContainer}>
         <View style={styles.logoContainer}>
           <Image source={Logo} style={styles.logo} />
-          <Text style={styles.logoText}>Sport Analytica</Text>
+          <Text style={styles.logoText}>Gotham city</Text>
         </View>
         <View style={styles.inputContainer}>
           <Icon
@@ -126,7 +126,6 @@ const styles = StyleSheet.create({
   },
   logo: {
     height: 135,
-    width: 120,
   },
   logoText: {
     color: '#FFC107',

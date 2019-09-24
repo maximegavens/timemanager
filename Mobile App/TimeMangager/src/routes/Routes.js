@@ -1,11 +1,8 @@
-import {
-  createSwitchNavigator,
-  createStackNavigator,
-  createAppContainer,
-  createBottomTabNavigator,
-} from 'react-navigation';
+import React from 'react';
+import {createSwitchNavigator, createAppContainer} from 'react-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-
+import {createStackNavigator} from 'react-navigation-stack';
+import {createBottomTabNavigator} from 'react-navigation-tabs';
 import AuthLoadingScreen from '../screens/AuthLoadingScreen';
 import HomeScreen from '../screens/app/HomeScreen';
 import SignInScreen from '../screens/auth/SignInScreen';
@@ -35,14 +32,6 @@ const DashboardTabNavigator = createBottomTabNavigator(
         ),
       },
     },
-    Settings: {
-      screen: SettingsStack,
-      navigationOptions: {
-        tabBarIcon: ({tintColor}) => (
-          <Icon name="md-settings" size={30} color={tintColor} />
-        ),
-      },
-    },
   },
   {
     tabBarOptions: {
@@ -61,7 +50,7 @@ const Routes = createAppContainer(
   createSwitchNavigator(
     {
       AuthLoading: AuthLoadingScreen,
-      /* App: DashboardTabNavigator, */
+      App: DashboardTabNavigator,
       Auth: AuthStack,
     },
     {
