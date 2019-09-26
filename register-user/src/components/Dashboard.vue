@@ -40,21 +40,6 @@
                                 <b-col sm="3">
                                 </b-col>
                                 <b-col sm="9">
-                                    <div>
-                                        <b-button-group>
-                                            <b-button @click="graphicData.format = 'line'">Line</b-button>
-                                            <b-button @click="graphicData.format = 'bar'">Bar</b-button>
-                                            <b-button @click="graphicData.format = 'area'">Area</b-button>
-                                        </b-button-group>
-                                    </div>
-                                </b-col>
-                            </b-row>
-                        </li>
-                        <li class="nav-item">
-                            <b-row>
-                                <b-col sm="3">
-                                </b-col>
-                                <b-col sm="9">
                                     <b-button @click="updateData">submit</b-button>
                                 </b-col>
                             </b-row>
@@ -66,49 +51,14 @@
                 <bar-chart
                         id="barTest"
                         :data="data"
-                        :bar-colors="xkeyss"
-                        :xkey="xkeyss"
-                        :ykeys="ykeyss"
-                        grid="true"
-                        resize="true"
-                        grid-text-weight="bold">
-                </bar-chart>
-                <bar-chart
-                        id="bar"
-                        :data="barData"
-                        :bar-colors="arrayColors"
-                        :xkeys="xkeys"
+                        :bar-colors="colors"
+                        xkey="date"
                         :ykeys="ykeys"
+                        :labels="labels"
                         grid="true"
                         resize="true"
                         grid-text-weight="bold">
                 </bar-chart>
-                <!--<bar-chart
-                        v-if="graphicData.format === 'bar'"
-                        id="bar"
-                        :data="lineDataTest"
-                        xkey="date"
-                        ykeys='[ "sum" ]'
-                        resize="true"
-                        labels='[ "working hours" ]'
-                        bar-colors='[ "#FF6384" ]'
-                        grid="true"
-                        grid-text-weight="bold"
-                        dateFormat>
-                </bar-chart>
-                <area-chart
-                        v-if="graphicData.format === 'area'"
-                        id="area"
-                        :data="lineDataTest"
-                        xkey="date"
-                        ykeys='[ "sum" ]'
-                        resize="true"
-                        labels='[ "working hours" ]'
-                        line-colors='[ "#FF6384" ]'
-                        grid="true"
-                        grid-text-weight="bold"
-                        hide-hover="always">
-                </area-chart>-->
                 <b-table style="margin-top: 20px" striped hover :items="workingtimes" :fields="fields"></b-table>
             </div>
         </div>
@@ -143,75 +93,35 @@
                 start: this.dateToDatePickerFormat(new Date(new Date() - 7 * 24 * 3600 * 1000)),
                 end: this.dateToDatePickerFormat(new Date()),
                 selected: "D",
-                options: [
-                    { value: 'D', text: 'Daily' },
-                    { value: 'W', text: 'Weekly' },
-                    { value: 'M', text: 'Monthly' },
-                ],
-                fields: [
-                    {
-                        key: "start",
-                        sortable: true
-                    },
-                    {
-                        key: "end",
-                        sortable: true
-                    }
-                ],
-                keys: ["luc", "jack"],
-                barColors:[ "#5859f9", "#73c000"],
-
-                format: "line",
+                options: [ { value: 'D', text: 'Daily' }, { value: 'W', text: 'Weekly' }, { value: 'M', text: 'Monthly' } ],
+                fields: [ { key: "start", sortable: true }, { key: "end", sortable: true } ],
                 data: [],
-                xkeyss: ["date"],
-                ykeyss: [],
+                ykeys: [],
                 labels: [],
                 colors: [],
-
-
-                barData: [
-                    { year: '2012', car: 40 , motorcycle:300, airplane:60},
-                    { year: '2013', car: 150, motorcycle:280, airplane:70},
-                    { year: '2014', car: 100, motorcycle:150, airplane:30},
-                    { year: '2015', car: 100, motorcycle:390, airplane:90}
-                ],
-                xkeys:["year"],
-
-                arrayColors:[ "#5859f9", "#73c000", "#cc45ff" ],
-                ykeys:["car","motorcycle","airplane"]
             }
         },
         created() {
             this.updateData()
-            console.log(this.data)
-            console.log(this.ykeyss)
-            console.log(this.labels)
-            console.log(this.colors)
         },
         watch: {
             passworkingtimes: function(newVal) {
                 this.workingtimes = newVal
                 this.updateData()
-                console.log(this.data)
-                console.log(this.ykeyss)
-                console.log(this.labels)
-                console.log(this.colors)
             }
         },
         methods: {
-            getCurrentDate(isoDate) {
-                const a = new Date(isoDate)
-                const y = a.getFullYear().toString()
-                const m = a.getMonth() + 1 < 10 ? "0" + (a.getMonth() + 1).toString() : (a.getMonth() + 1).toString()
-                const d = a.getDate() < 10 ? "0" + a.getDate().toString() : a.getDate().toString()
-                const c = new Date(y + "-" + m + "-" + d)
-                return c
-            },
             dateToDatePickerFormat(a) {
                 const y = a.getFullYear().toString()
                 const m = a.getMonth() + 1 < 10 ? "0" + (a.getMonth() + 1).toString() : (a.getMonth() + 1).toString()
                 const d = a.getDate() < 10 ? "0" + a.getDate().toString() : a.getDate().toString()
                 return y + "-" + m + "-" + d
+            },
+            customDateFormat(a) {
+                const y = a.getFullYear().toString()
+                const m = a.getMonth() + 1 < 10 ? "0" + (a.getMonth() + 1).toString() : (a.getMonth() + 1).toString()
+                const d = a.getDate() < 10 ? "0" + a.getDate().toString() : a.getDate().toString()
+                return d + "/" + m + "/" + y
             },
             calculWorkingtimeForGivenDate(givenDate, period, start, end) {
                 const GDprevious = this.addDays(givenDate, period)
@@ -244,20 +154,7 @@
                 const dateStart = new Date(this.start)
                 const dateEnd = new Date(this.end)
 
-                console.log(sortWorkingtimes)
-
-                //let period = 1
-                //if (this.selected == "D") {
-                //    period = 1
-                //}
-                //else if (this.selected == "W") {
-                //    period = 7
-                //}
-                //else if (this.selected == "M") {
-                //    period = 30
-                //}
                 this.initGraphicData(sortWorkingtimes)
-
                 if (dateStart != null && dateEnd != null) {
                     if (dateStart >= dateEnd) {
                         alert("start must be before end")
@@ -269,7 +166,7 @@
                     let n = dateStart
                     while (n <= dateEnd) {
                         newLine = {}
-                        newLine["date"] = n.getTime()
+                        newLine["date"] = this.customDateFormat(n)
                         index = 0
                         for(let item in sortWorkingtimes) {
                             sum = 0
@@ -279,29 +176,13 @@
                             newLine[this.labels[index]] = (sum / 1000) / 3600
                             index = index + 1
                         }
+                        newLine["moyenne"] = this.averageWorkingtimes(newLine)
                         this.data.push(newLine)
                         n = this.addDays(n, period)
                     }
                 } else {
                     alert("choose start and end")
                 }
-            },
-            completeSums() {
-                let sums = {}
-                for(let i = 0; i < this.workingtimes.length; i++){
-                    sums[this.workingtimes[i].user_id] = 0
-                }
-                for(let item in sums){
-
-                }
-                return sums
-            },
-            copyObject(obj) {
-                let target = {}
-                for(let prop in obj){
-                    target[prop] = obj[prop]
-                }
-                return target
             },
             sortWorkingtimesByUserId(workingtimes) {
                 let sortWorkingtimes = this.getObjectListUserIdFromWorkingtimes(workingtimes)
@@ -319,7 +200,7 @@
             },
             resetGraphicData() {
                 this.data = []
-                this.ykeyss = []
+                this.ykeys = []
                 this.labels = []
                 this.colors = []
             },
@@ -335,8 +216,11 @@
                     keys.push(username)
                     colors.push(this.getRandomColor())
                 }
+                labels.push("moyenne")
+                keys.push("moyenne")
+                colors.push("#000000")
                 this.labels = labels
-                this.ykeyss = keys
+                this.ykeys = keys
                 this.colors = colors
             },
             getUsername(userId) {
@@ -349,6 +233,17 @@
                         }
                     }
                 }
+            },
+            averageWorkingtimes(newLine) {
+                let sum = 0
+                let n = 0
+                for(let item in newLine) {
+                    if (!(item === "date")) {
+                        sum = sum + newLine[item]
+                        n = n + 1
+                    }
+                }
+                return sum / n
             },
             getRandomColor() {
                 let letters = '0123456789ABCDEF';
@@ -370,5 +265,4 @@
 </script>
 
 <style scoped>
-
 </style>
