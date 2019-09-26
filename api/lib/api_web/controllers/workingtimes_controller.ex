@@ -1,5 +1,6 @@
 defmodule ApiWeb.WorkingtimesController do
   use ApiWeb, :controller
+  use PhoenixSwagger
 
   alias Api.WorkingtimeContext
   alias Api.WorkingtimeContext.Workingtimes
@@ -140,4 +141,61 @@ defmodule ApiWeb.WorkingtimesController do
     end
     newWorkingtimes
   end
+
+  swagger_path :showMine do
+    get "/api/workingtimes"
+    description "View their dashboards"
+    response 200, "Success"
+  end
+
+  swagger_path :showTeamOne do
+    get "/api/workingtimes/:userID/team/:teamID"
+    description "View the daily and weekly working hours of an employee over a period of time"
+    response 200, "Success"
+  end
+
+  swagger_path :showTeamAll do
+    get "/api/workingtimes/team/:teamID"
+    description "View the averages of the daily and weekly hours of the team over a given period"
+    response 200, "Success"
+  end
+
+  swagger_path :index do
+    get "/api/workingtimes/all"
+    description "View the dashboards of any users"
+    response 200, "Success"
+  end
+
+  swagger_path :showOne do
+    get "/api/workingtimes/:userID/:workingtimeID"
+    description "view one workingtime"
+    response 200, "Success"
+  end
+
+  swagger_path :create do
+    post "/api/workingtimes/:userID"
+    description "create workingtime"
+    response 200, "Success"
+    parameters do
+      start :path, :naive_datetime, "start working", required: true, example: "2019-02-05 12:10:10"
+      endd :path, :naive_datetime, "finish working", required: true, example: "2019-02-05 19:10:10"
+    end
+  end
+
+  swagger_path :update do
+    put "/api/workingtimes/:id"
+    description "update workingtime"
+    response 200, "Success"
+    parameters do
+      start :path, :naive_datetime, "start working", required: true, example: "2019-02-05 12:10:10"
+      endd :path, :naive_datetime, "finish working", required: true, example: "2019-02-05 19:10:10"
+    end
+  end
+
+  swagger_path :delete do
+    PhoenixSwagger.Path.delete "/api/workingtimes/:id"
+    description "delete workingtime"
+    response 200, "Success"
+  end
+
 end

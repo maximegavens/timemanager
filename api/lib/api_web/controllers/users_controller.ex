@@ -1,5 +1,7 @@
 defmodule ApiWeb.UsersController do
   use ApiWeb, :controller
+  use PhoenixSwagger
+
 
   alias Api.UserContext
   alias Api.UserContext.Users
@@ -117,8 +119,94 @@ defmodule ApiWeb.UsersController do
     end
   end
 
+
+  swagger_path :signUp do
+    get "/api/users/sign_up"
+    description "user register his account"
+    response 200, "Success"
+    parameters do
+      username :path, :string, "user'name", required: true, example: "jack"
+      email :path, :string, "user'email", required: true, example: "jack@exe.com"
+      role :path, :string, "user'role", required: true, example: "manager"
+      password :path, :string, "user'password", required: true, example: "admin"
+      team :path, :integer, "user'team", required: true, example: "7"
+    end
+  end
+
+  swagger_path :showMine do
+    get "/api/users"
+    description "view account information"
+    response 200, "Success"
+  end
+
+  swagger_path :updateMine do
+    put "/api/users"
+    description "edit their account information"
+    response 200, "Success"
+    parameters do
+      username :path, :string, "user'name", required: true, example: "jack"
+      email :path, :string, "user'email", required: true, example: "jack@exe.com"
+      role :path, :string, "user'role", required: true, example: "manager"
+      password :path, :string, "user'password", required: true, example: "admin"
+      team :path, :integer, "user'team", required: true, example: "7"
+    end
+  end
+
+  swagger_path :deleteMine do
+    delete "/api/users"
+    description "Delete their account"
+    response 200, "Success"
+  end
+
+  swagger_path :signOut do
+    get "/api/users/sign_out"
+    description "to log out"
+    response 200, "Success"
+  end
+
+  swagger_path :showTeam do
+    get "/api/users/team/:teamID"
+    description "view my team account information"
+    response 200, "Success"
+  end
+
+  swagger_path :index do
+    get "/api/users/all"
+    description "view all users"
+    response 200, "Success"
+  end
+
+  swagger_path :updateTeam do
+    put "/api/users/:userID"
+    description "change user's team by teamID"
+    response 200, "Success"
+    parameters do
+      team :path, :integer, "user'team", required: true, example: "7"
+    end
+  end
+
+  swagger_path :promote do
+    put "/api/users/promote/:userID"
+    description "Promote a user from the rank of employee to manager"
+    response 200, "Success"
+  end
+
+  swagger_path :deleteOne do
+    delete "/api/users/:userID"
+    description "Delete accounts of any users"
+    response 200, "Success"
+  end
+
+  swagger_path :show do
+    get "/api/users/:userID"
+    description "view one user"
+    response 200, "Success"
+  end
+
+end
+
+
+
   # swagger path
   # swagger definition
   # complete router
-
-end

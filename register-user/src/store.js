@@ -169,6 +169,20 @@ let store = new Vuex.Store({
                     })
             })
         },
+        teamDashboard({commit}, teamId){
+            const ApiUrl = "http://localhost:4000/api/workingtimes/team/" + teamId
+            return new Promise((resolve, reject) => {
+                axios.get(ApiUrl)
+                    .then(resp => {
+                        const data = resp.data.data
+                        console.log(data)
+                        resolve(data)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
         selectedTeamMateHours({commit}, param){
             const ApiUrl = "http://localhost:4000/api/workingtimes/" + param.userId + "/team/" + param.teamId
             return new Promise((resolve, reject) => {

@@ -82,8 +82,7 @@
         methods: {
             getUser () {
                 this.$store.dispatch('login', {email: this.email, password: this.password})
-                    .then(() => {this.$store.dispatch('lastClock').then(resp => console.log(resp));
-                        this})
+                    .then(() => {this.$store.dispatch('lastClock').then(resp => console.log(resp));})
                     .catch(err => console.log(err))
             },
             createUser() {

@@ -113,10 +113,13 @@ export default {
               .catch(err => console.log(err))
     },
     viewMyDashboard: function () {
-      this.$store.dispatch('dashboard')
-              .then(() => this.widget = 'dashboard')
-              .catch(err => {console.log(err);
-              console.log(this.$store.state.status);})
+      this.$store.dispatch('profile')
+              .then(() =>
+                      this.$store.dispatch('dashboard')
+                        .then(() => this.widget = 'dashboard')
+                        .catch(err => console.log(err))
+              )
+              .catch(err => console.log(err))
     },
     viewMyTeamProfile: function () {
       this.$store.dispatch('profile')

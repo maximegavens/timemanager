@@ -19,6 +19,7 @@
                                         </b-button>
                                     </template>
                                 </b-table>
+                            <b-button class="btn btn-danger" size="sm" @click="teamDashboard">TEAM DASHBOARD</b-button>
                             <h6 class="card-subtitle text-muted">
                                 <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
                                     All Users
@@ -40,10 +41,9 @@
                     <div class="card">
                         <div class="card-header"><h4 class="card-title">{{selectedTeamMate.username}} dashboard</h4></div>
                         <div class="card-body">
-                            <dashboard :workingtimes="selectedWorkingtimes"></dashboard>
+                            <dashboard v-bind:passworkingtimes="selectedWorkingtimes"></dashboard>
                         </div>
                     </div>
-
                 </b-col>
             </b-row>
         </div>
@@ -63,7 +63,7 @@
                 allUser: this.$store.state.myAllProfile,
                 teamId: this.$store.state.myProfile.team,
                 selectedTeamMate: {},
-                selectedWorkingtimes: [],
+                selectedWorkingtimes: this.$store.state.myWorkingtimes,
             }
         },
         methods: {
@@ -100,11 +100,17 @@
                 const param = {userId: teamMate.id, teamId: this.teamId}
                 this.$store.dispatch('selectedTeamMateHours', param)
                     .then(resp => {
-                        console.log(resp)
                         this.selectedWorkingtimes = resp
                     })
                     .catch(err => console.log(err))
             },
+            teamDashboard: function() {
+                this.$store.dispatch('teamDashboard', this.teamId)
+                    .then(resp => {
+                        this.selectedWorkingtimes = resp
+                    })
+                    .catch(err => console.log(err))
+            }
         },
         components: {
             Dashboard,

@@ -1,5 +1,7 @@
 defmodule ApiWeb.ClocksController do
   use ApiWeb, :controller
+  use PhoenixSwagger
+
 
   alias Api.ClockContext
   alias Api.ClockContext.Clocks
@@ -78,5 +80,29 @@ defmodule ApiWeb.ClocksController do
     with {:ok, %Clocks{}} <- ClockContext.delete_clocks(clocks) do
       send_resp(conn, :no_content, "")
     end
+  end
+
+  swagger_path :create do
+    post "/api/clocks"
+    description "Report their departure and arrival times"
+    response 200, "Success"
+  end
+
+  swagger_path :showMine do
+    get "/api/clocks"
+    description "view their last clock"
+    response 200, "Success"
+  end
+
+  swagger_path :index do
+    get "/api/clocks/users/:userID"
+    description "view all user's clock"
+    response 200, "Success"
+  end
+
+  swagger_path :show do
+    get "/api/clocks/:id"
+    description "view one clock"
+    response 200, "Success"
   end
 end

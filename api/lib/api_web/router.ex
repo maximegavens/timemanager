@@ -1,5 +1,6 @@
 defmodule ApiWeb.Router do
   use ApiWeb, :router
+  use PhoenixSwagger
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -83,13 +84,17 @@ defmodule ApiWeb.Router do
     delete "/workingtimes/:id", WorkingtimesController, :delete                            # delete workingtime
     get "/users/:userID", UsersController, :show                                           # view one user
   end
+  scope "/api/swagger" do
+    forward "/", PhoenixSwagger.Plug.SwaggerUI, otp_app: :api, swagger_file: "swagger.json"
+  end
 
   def swagger_info do
     %{
       info: %{
         version: "1.0",
         title: "Api"
-      }
+      },
+      tags: [%{name: "Users", description: "Operations about Users"}]
     }
   end
 end

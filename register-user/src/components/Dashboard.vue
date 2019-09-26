@@ -42,9 +42,9 @@
                                 <b-col sm="9">
                                     <div>
                                         <b-button-group>
-                                            <b-button @click="graphicFormat = 'line'">Line</b-button>
-                                            <b-button @click="graphicFormat = 'bar'">Bar</b-button>
-                                            <b-button @click="graphicFormat = 'area'">Area</b-button>
+                                            <b-button @click="graphicData.format = 'line'">Line</b-button>
+                                            <b-button @click="graphicData.format = 'bar'">Bar</b-button>
+                                            <b-button @click="graphicData.format = 'area'">Area</b-button>
                                         </b-button-group>
                                     </div>
                                 </b-col>
@@ -63,21 +63,28 @@
                 </div>
             </nav>
             <div class="col-md-10" role="main">
-                <line-chart
-                        v-if="graphicFormat === 'line'"
-                        id="lineTest"
-                        :data="lineDataTest"
-                        xkey="date"
-                        ykeys='[ "sum" ]'
-                        resize="true"
-                        labels='[ "working hours" ]'
-                        line-colors='[ "#0000FF" ]'
-                        grid="true"
-                        grid-text-weight="bold"
-                        smooth="false">
-                </line-chart>
                 <bar-chart
-                        v-if="graphicFormat === 'bar'"
+                        id="barTest"
+                        :data="data"
+                        :bar-colors="xkeyss"
+                        :xkey="xkeyss"
+                        :ykeys="ykeyss"
+                        grid="true"
+                        resize="true"
+                        grid-text-weight="bold">
+                </bar-chart>
+                <bar-chart
+                        id="bar"
+                        :data="barData"
+                        :bar-colors="arrayColors"
+                        :xkeys="xkeys"
+                        :ykeys="ykeys"
+                        grid="true"
+                        resize="true"
+                        grid-text-weight="bold">
+                </bar-chart>
+                <!--<bar-chart
+                        v-if="graphicData.format === 'bar'"
                         id="bar"
                         :data="lineDataTest"
                         xkey="date"
@@ -90,7 +97,7 @@
                         dateFormat>
                 </bar-chart>
                 <area-chart
-                        v-if="graphicFormat === 'area'"
+                        v-if="graphicData.format === 'area'"
                         id="area"
                         :data="lineDataTest"
                         xkey="date"
@@ -101,7 +108,7 @@
                         grid="true"
                         grid-text-weight="bold"
                         hide-hover="always">
-                </area-chart>
+                </area-chart>-->
                 <b-table style="margin-top: 20px" striped hover :items="workingtimes" :fields="fields"></b-table>
             </div>
         </div>
@@ -117,28 +124,30 @@
 <script>
     /* eslint-disable */
     // eslint-disable-next-line
-    import Raphael from 'raphael/raphael'
-    global.Raphael = Raphael
+    //import Raphael from 'raphael/raphael'
+    //global.Raphael = Raphael
     import { DonutChart, BarChart, LineChart, AreaChart } from 'vue-morris'
-    import moment from 'moment'
     import vuejsDatepicker from 'vuejs-datepicker';
     export default {
         name: "Dashboard",
-        props: ['passWorkingtimes'],
+        props: {
+            passworkingtimes: Array,
+        },
         data() {
             return {
-                graphicFormat: "line",
+                arrayColorss:[ "#5859f9", "#73c000" ],
                 error: [],
-                selected: null,
+                myProfile: this.$store.state.myProfile,
+                myTeamProfile: this.$store.state.myTeamProfile,
+                workingtimes: this.$store.state.myWorkingtimes,
+                start: this.dateToDatePickerFormat(new Date(new Date() - 7 * 24 * 3600 * 1000)),
+                end: this.dateToDatePickerFormat(new Date()),
+                selected: "D",
                 options: [
                     { value: 'D', text: 'Daily' },
                     { value: 'W', text: 'Weekly' },
                     { value: 'M', text: 'Monthly' },
                 ],
-                start: null,
-                end: null,
-
-                workingtimes: this.passWorkingtimes,
                 fields: [
                     {
                         key: "start",
@@ -149,25 +158,45 @@
                         sortable: true
                     }
                 ],
+                keys: ["luc", "jack"],
+                barColors:[ "#5859f9", "#73c000"],
 
-                userId: this.$store.state.myProfile.username,
+                format: "line",
+                data: [],
+                xkeyss: ["date"],
+                ykeyss: [],
+                labels: [],
+                colors: [],
 
-                donutData: [
-                    { label: 'Red', value: 300 },
-                    { label: 'Blue', value: 50 },
-                    { label: 'Yellow', value: 100 }
+
+                barData: [
+                    { year: '2012', car: 40 , motorcycle:300, airplane:60},
+                    { year: '2013', car: 150, motorcycle:280, airplane:70},
+                    { year: '2014', car: 100, motorcycle:150, airplane:30},
+                    { year: '2015', car: 100, motorcycle:390, airplane:90}
                 ],
-                lineDataTest: []
+                xkeys:["year"],
+
+                arrayColors:[ "#5859f9", "#73c000", "#cc45ff" ],
+                ykeys:["car","motorcycle","airplane"]
             }
         },
         created() {
-            if (this.workingtimes == null) {
-                this.workingtimes = this.$store.state.myWorkingtimes
-            }
-            this.end = this.dateToDatePickerFormat(new Date())
-            this.start = this.dateToDatePickerFormat(new Date(new Date() - 7 * 24 * 3600 * 1000))
-            this.selected = "D"
             this.updateData()
+            console.log(this.data)
+            console.log(this.ykeyss)
+            console.log(this.labels)
+            console.log(this.colors)
+        },
+        watch: {
+            passworkingtimes: function(newVal) {
+                this.workingtimes = newVal
+                this.updateData()
+                console.log(this.data)
+                console.log(this.ykeyss)
+                console.log(this.labels)
+                console.log(this.colors)
+            }
         },
         methods: {
             getCurrentDate(isoDate) {
@@ -210,39 +239,125 @@
                 return newDate
             },
             updateData() {
-                let period = 1
-                if (this.selected != null) {
-                    if (this.selected == "D") {
-                        period = 1
-                    }
-                    else if (this.selected == "W") {
-                        period = 7
-                    }
-                    else if (this.selected == "M") {
-                        period = 30
-                    }
-                }
-                this.lineDataTest = []
-                let dateStart = new Date(this.start)
-                let dateEnd = new Date(this.end)
+                const sortWorkingtimes = this.sortWorkingtimesByUserId(this.workingtimes)
+                const period = this.selected === "D" ? 1 : (this.selected === "W" ? 7 : 30)
+                const dateStart = new Date(this.start)
+                const dateEnd = new Date(this.end)
+
+                console.log(sortWorkingtimes)
+
+                //let period = 1
+                //if (this.selected == "D") {
+                //    period = 1
+                //}
+                //else if (this.selected == "W") {
+                //    period = 7
+                //}
+                //else if (this.selected == "M") {
+                //    period = 30
+                //}
+                this.initGraphicData(sortWorkingtimes)
+
                 if (dateStart != null && dateEnd != null) {
                     if (dateStart >= dateEnd) {
-                        alert("start must be befor end")
+                        alert("start must be before end")
                         return
                     }
+                    let index = 0
                     let sum = 0
+                    let newLine = null
                     let n = dateStart
                     while (n <= dateEnd) {
-                        sum = 0
-                        for(let i = 0; i < this.workingtimes.length; i++){
-                            sum = sum + this.calculWorkingtimeForGivenDate(n, period, new Date(this.workingtimes[i].start), new Date(this.workingtimes[i].end))
+                        newLine = {}
+                        newLine["date"] = n.getTime()
+                        index = 0
+                        for(let item in sortWorkingtimes) {
+                            sum = 0
+                            for(let i = 0; i < sortWorkingtimes[item].length; i++){
+                                sum = sum + this.calculWorkingtimeForGivenDate(n, period, new Date(sortWorkingtimes[item][i].start), new Date(sortWorkingtimes[item][i].end))
+                            }
+                            newLine[this.labels[index]] = (sum / 1000) / 3600
+                            index = index + 1
                         }
-                        this.lineDataTest.push({date: n.getTime(), sum: (sum / 1000) / 3600})
+                        this.data.push(newLine)
                         n = this.addDays(n, period)
+                    }
+                } else {
+                    alert("choose start and end")
+                }
+            },
+            completeSums() {
+                let sums = {}
+                for(let i = 0; i < this.workingtimes.length; i++){
+                    sums[this.workingtimes[i].user_id] = 0
+                }
+                for(let item in sums){
+
+                }
+                return sums
+            },
+            copyObject(obj) {
+                let target = {}
+                for(let prop in obj){
+                    target[prop] = obj[prop]
+                }
+                return target
+            },
+            sortWorkingtimesByUserId(workingtimes) {
+                let sortWorkingtimes = this.getObjectListUserIdFromWorkingtimes(workingtimes)
+                for(let i = 0; i < workingtimes.length; i++) {
+                    sortWorkingtimes[workingtimes[i].user_id].push(workingtimes[i])
+                }
+                return sortWorkingtimes
+            },
+            getObjectListUserIdFromWorkingtimes(workingtimes) {
+                let obj = {}
+                for(let w in workingtimes) {
+                    obj[workingtimes[w].user_id] = []
+                }
+                return obj
+            },
+            resetGraphicData() {
+                this.data = []
+                this.ykeyss = []
+                this.labels = []
+                this.colors = []
+            },
+            initGraphicData(sortWorkingtimes) {
+                let username = ""
+                let labels = []
+                let keys = []
+                let colors = []
+                this.resetGraphicData()
+                for(let item in sortWorkingtimes) {
+                    username = this.getUsername(item)
+                    labels.push(username)
+                    keys.push(username)
+                    colors.push(this.getRandomColor())
+                }
+                this.labels = labels
+                this.ykeyss = keys
+                this.colors = colors
+            },
+            getUsername(userId) {
+                if (this.myTeamProfile.length === 0) {
+                    return this.myProfile.username
+                } else {
+                    for(let profile in this.myTeamProfile) {
+                        if (this.myTeamProfile[profile].id.toString() === userId) {
+                            return this.myTeamProfile[profile].username
+                        }
                     }
                 }
             },
-
+            getRandomColor() {
+                let letters = '0123456789ABCDEF';
+                let color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            },
         },
         components: {
             DonutChart,
