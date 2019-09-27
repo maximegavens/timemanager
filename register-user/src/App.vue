@@ -10,9 +10,10 @@
 
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item @click="widget = 'home'">Home</b-nav-item>
+            <b-nav-item variant="outline-secondary" @click="widget = 'home'">Home</b-nav-item>
             <b-nav-item @click="viewMyDashboard">My dashboard</b-nav-item>
-            <b-nav-item @click="viewMyTeamProfile">Manage my teams</b-nav-item>
+            <b-nav-item @click="viewMyTeamProfile">Team Management</b-nav-item>
+            <b-nav-item @click="viewMyAllProfile">General Management</b-nav-item>
 
             <b-nav-item v-if="logState === 'success'">
               <div v-if="myLastClock != null">
@@ -56,6 +57,9 @@
       <div v-if="widget === 'team'">
         <team></team>
       </div>
+      <div v-if="widget === 'general'">
+        <general></general>
+      </div>
     </div>
 
     <div v-if="logState === ''">
@@ -73,6 +77,7 @@
   import Profile from "./components/Profile"
   import Dashboard from "./components/Dashboard"
   import Team from "./components/Team"
+  import General from "./components/General"
 export default {
   name: 'app',
   data() {
@@ -134,6 +139,19 @@ export default {
               .catch(err => console.log(err))
 
     },
+    viewMyAllProfile: function () {
+      this.$store.dispatch('profile')
+              .then(() => {
+                this.$store.dispatch('allProfile')
+                        .then(resp => {
+                          console.log(resp)
+                          this.widget = 'general'
+                        })
+                        .catch(err => console.log(err))
+              })
+              .catch(err => console.log(err))
+
+    },
   },
   components: {
     Authentification,
@@ -141,6 +159,7 @@ export default {
     Profile,
     Dashboard,
     Team,
+    General,
   }
 }
 </script>
@@ -150,7 +169,6 @@ export default {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
 }
 </style>
