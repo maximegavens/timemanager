@@ -25,8 +25,7 @@ defmodule ApiWeb.ClocksController do
     user_id = Api.RestrictService.extract_user_id(conn)
     user = UserContext.get_users!(user_id)
 
-    # TODO CONFIG PARIS DATETIME
-    time = NaiveDateTime.utc_now
+    time = NaiveDateTime.add(NaiveDateTime.utc_now, 2 * 3600, :second)
     previousClock = ClockContext.get_previous_clock_by_user_id(user_id)
     if previousClock == nil do
       clocks_params = %{"time" => time, "status" => true}

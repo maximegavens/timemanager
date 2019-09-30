@@ -60,6 +60,10 @@ let store = new Vuex.Store({
             state.status = 'success'
             state.myWorkingtimes = data
         },
+        all_workingtimes_success(state, data) {
+            state.status = 'success'
+            state.myAllWorkingtimes = data
+        },
         change_success(state, data){
             state.status = 'success'
             state.myProfile = data
@@ -74,7 +78,10 @@ let store = new Vuex.Store({
         },
         change_team_success(state) {
             state.status = 'success'
-        }
+        },
+        delete_success(state) {
+            state.status = 'success'
+        },
     },
     actions: {
         init() {
@@ -183,6 +190,20 @@ let store = new Vuex.Store({
                     })
             })
         },
+        allDashboard({commit}) {
+            const ApiUrl = "http://localhost:4000/api/workingtimes/all"
+            return new Promise((resolve, reject) => {
+                axios.get(ApiUrl)
+                    .then(resp => {
+                        const data = resp.data.data
+                        commit('all_workingtimes_success', data)
+                        resolve(data)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
         selectedTeamMateHours({commit}, param){
             const ApiUrl = "http://localhost:4000/api/workingtimes/" + param.userId + "/team/" + param.teamId
             return new Promise((resolve, reject) => {
@@ -258,6 +279,20 @@ let store = new Vuex.Store({
                     })
             })
         },
+        deleteAccount({commit}, userId) {
+            const ApiUrl = "http://localhost:4000/api/users/" + userId.toString()
+            return new Promise((resolve, reject) => {
+                axios.delete(ApiUrl)
+                    .then(resp => {
+                        commit('delete_success')
+                        resolve(resp)
+                    })
+                    .catch(err => {
+                        localStorage.removeItem('token')
+                        reject(err)
+                    })
+            })
+        },
         logout({commit}) {
             const ApiUrl = "http://localhost:4000/api/users/sign_out"
             return new Promise((resolve, reject) => {
@@ -281,6 +316,18 @@ let store = new Vuex.Store({
                     .then(resp => {
                         const clock = resp.data.data
                         commit('clock_success', clock)
+                        resolve(resp)
+                    })
+                    .catch(err => {
+                        reject(err)
+                    })
+            })
+        },
+        promote({commit}, userId){
+            const ApiUrl = "http://localhost:4000/api/users/promote/" + userId.toString()
+            return new Promise((resolve, reject) => {
+                axios.put(ApiUrl)
+                    .then(resp => {
                         resolve(resp)
                     })
                     .catch(err => {

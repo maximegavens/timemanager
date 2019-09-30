@@ -1,15 +1,26 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
     <div>
         <div style="margin-top: 50px">
-            <b-row align-h="around">
-                <b-col cols="7">
+            <b-row>
+                <b-col cols="2">
+                </b-col>
+                <b-col cols="4">
                     <div class="card">
-                        <div class="card-header">
-                            Manage My Team
+                        <div style="text-align: center" class="card-header">
+                            Team n°{{teamId}} list
                         </div>
                         <div class="card-body">
-                            <h6 class="card-subtitle text-muted">My Team (n°{{teamId}})</h6>
-                                <b-table striped hover :items="team" :fields="fields">
+                                <b-table
+                                        responsive
+                                        :small="small"
+                                        :bordered="bordered"
+                                        :hover="hover"
+                                        :no-border-collapse="noBorderCollapse"
+                                        :head-variant="headVariant"
+                                        :sticky-header="stickyHeader"
+
+                                        :items="team"
+                                        :fields="fields">
                                     <template v-slot:cell(action)="row">
                                         <b-button size="sm" @click="viewSelectedTeamMateHours(row.item)" class="mr-2">
                                             Dashboard
@@ -19,29 +30,53 @@
                                         </b-button>
                                     </template>
                                 </b-table>
+                        </div>
+                        <div class="card-footer">
                             <b-button class="btn btn-danger" size="sm" @click="teamDashboard">TEAM DASHBOARD</b-button>
-                            <h6 class="card-subtitle text-muted">
-                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="true" aria-controls="collapseExample">
-                                    All Users
-                                </button>
-                            </h6>
-                            <div id="collapseExample" class="collapse">
-                                <b-table striped hover :items="allUser" :fields="fields">
-                                    <template v-slot:cell(action)="row">
-                                        <b-button size="sm" @click="addToTheTeam(row.item.id)" class="mr-2">
-                                            Add
-                                        </b-button>
-                                    </template>
-                                </b-table>
-                            </div>
                         </div>
                     </div>
                 </b-col>
-                <b-col cols="12">
+                <b-col cols="4">
                     <div class="card">
-                        <div class="card-header"><h4 class="card-title">{{selectedTeamMate.username}} dashboard</h4></div>
+                        <div style="text-align: center" class="card-header">
+                            All Users
+                        </div>
+                        <div class="card-body">
+                            <b-table
+                                    responsive
+                                    :small="small"
+                                    :bordered="bordered"
+                                    :hover="hover"
+                                    :no-border-collapse="noBorderCollapse"
+                                    :head-variant="headVariant"
+                                    :sticky-header="stickyHeader"
+
+                                    :items="allUser"
+                                    :fields="fieldsAll">
+                                <template v-slot:cell(action)="row">
+                                    <b-button v-if="teamId !== row.item.team" size="sm" @click="addToTheTeam(row.item.id)" class="mr-2">
+                                        Add
+                                    </b-button>
+                                </template>
+                            </b-table>
+                        </div>
+                        <div class="card-footer">
+                        </div>
+                    </div>
+                </b-col>
+            </b-row>
+            <b-row v-if="isDashboard">
+                <b-col cols="1">
+                </b-col>
+                <b-col style="margin-top: 20px" cols="10">
+                    <div class="card">
+                        <div style="text-align: center" class="card-header">
+                            {{selectedTeamMate.username}} dashboard
+                        </div>
                         <div class="card-body">
                             <dashboard v-bind:passworkingtimes="selectedWorkingtimes"></dashboard>
+                        </div>
+                        <div class="card-footer">
                         </div>
                     </div>
                 </b-col>
@@ -58,16 +93,40 @@
         name: "Team",
         data() {
             return {
-                fields: ['id', 'team', 'username', 'role', 'email', 'action'],
                 team: this.$store.state.myTeamProfile,
                 allUser: this.$store.state.myAllProfile,
                 teamId: this.$store.state.myProfile.team,
                 selectedTeamMate: {},
                 selectedWorkingtimes: this.$store.state.myWorkingtimes,
+
+                fields: [
+                    {key:'username', label:'Name'},
+                    {key:'role', label:'Status'},
+                    {key:'email', label:'Email'},
+                    'Action',
+                ],
+
+                fieldsAll: [
+                    {key:'team', label:'Team'},
+                    {key:'username', label:'Name'},
+                    {key:'role', label:'Status'},
+                    {key:'email', label:'Email'},
+                    'Action',
+                ],
+
+                small: true,
+                bordered: true,
+                hover: true,
+                noBorderCollapse: false,
+                headVariant: "light",
+                stickyHeader: true,
+
+                isDashboard: false,
+
             }
         },
         methods: {
-            removeFromTheTeam: function(id) {
+            removeFromTheTeam(id) {
                 console.log(this.teamId)
                 const param = {userId: id, teamId: '-1'}
                 this.$store.dispatch('changeTeam', param)
@@ -81,7 +140,7 @@
                     })
                     .catch(err => console.log(err))
             },
-            addToTheTeam: function(id) {
+            addToTheTeam(id) {
                 console.log(this.teamId)
                 const param = {userId: id, teamId: this.teamId}
                 this.$store.dispatch('changeTeam', param)
@@ -95,7 +154,13 @@
                     })
                     .catch(err => console.log(err))
             },
-            viewSelectedTeamMateHours: function(teamMate) {
+            viewSelectedTeamMateHours(teamMate) {
+                if (teamMate === this.selectedTeamMate) {
+                    this.selectedTeamMate = {}
+                    this.isDashboard = false
+                    return
+                }
+                this.isDashboard = true
                 this.selectedTeamMate = teamMate
                 const param = {userId: teamMate.id, teamId: this.teamId}
                 this.$store.dispatch('selectedTeamMateHours', param)
@@ -104,7 +169,8 @@
                     })
                     .catch(err => console.log(err))
             },
-            teamDashboard: function() {
+            teamDashboard() {
+                this.isDashboard = true
                 this.$store.dispatch('teamDashboard', this.teamId)
                     .then(resp => {
                         this.selectedWorkingtimes = resp

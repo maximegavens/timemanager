@@ -22,7 +22,7 @@ defmodule Api.UserContext.Users do
   def changeset(users, attrs) do
     users
     |> cast(attrs, [:role, :username, :email, :password, :team])
-    |> validate_required([:role, :username, :email, :password, :team])
+    |> validate_required([:username, :email])
     |> put_password_hash()
   end
 

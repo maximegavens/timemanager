@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="text-align: center">
         <!-- WELCOME -->
         <div style="margin-top: 100px" v-if="logState === ''">
             <div class="row justify-content-center" style="margin-top: 100px;">
@@ -83,12 +83,12 @@
             getUser () {
                 this.$store.dispatch('login', {email: this.email, password: this.password})
                     .then(() => {this.$store.dispatch('lastClock').then(resp => console.log(resp));})
-                    .catch(err => console.log(err))
+                    .catch(err => {console.log(err); alert("authentification failed.")})
             },
             createUser() {
                 this.errors = [];
-                this.$store.dispatch('register', {email: this.email, username: this.username, username: this.username, status: this.status, team: this.team})
-                    .then(resp => this.logState = 'login')
+                this.$store.dispatch('register', {email: this.email, username: this.username, password: this.password, role: this.status, team: this.team})
+                    .then(() => this.logState = 'login')
                     .catch(err => console.log(err))
             },
         }

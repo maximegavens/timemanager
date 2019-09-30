@@ -5,9 +5,6 @@
         <b-navbar-brand>
           GothamCity
         </b-navbar-brand>
-
-        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
             <b-nav-item variant="outline-secondary" @click="widget = 'home'">Home</b-nav-item>
@@ -26,25 +23,15 @@
             </b-nav-item>
           </b-navbar-nav>
 
-          <b-navbar-nav class="ml-auto">
-            <b-nav-form>
-              <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-              <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
-            </b-nav-form>
-
-            <b-nav-item-dropdown v-if="logState === 'success'" right>
-              <template v-slot:button-content>
-                <em>User</em>
-              </template>
-              <b-dropdown-item @click="viewMyProfile">Profile</b-dropdown-item>
-              <b-dropdown-item v-if="logState === 'success'" @click="logout">Log out</b-dropdown-item>
-            </b-nav-item-dropdown>
+          <b-navbar-nav v-if="logState === 'success'" right class="ml-auto">
+            <b-nav-item @click="viewMyProfile">Profile</b-nav-item>
+            <b-nav-item @click="logout">Log out</b-nav-item>
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>
     </div>
 
-    <div v-if="logState === 'success'">
+    <div style="margin-top: 50px" v-if="logState === 'success'">
       <div v-if="widget === 'home'">
         <gotham></gotham>
       </div>
@@ -95,29 +82,28 @@ export default {
   computed : {
     logState: function(){ return this.$store.state.status},
     myProfile: function(){ return this.$store.state.myProfile},
-    myLastClock: function(){
-      console.log(this.$store.state.myLastClock);
-      return this.$store.state.myLastClock;},
-    myToken: function(){ return this.$store.state.token},
-
+    myLastClock: function(){ return this.$store.state.myLastClock;},
   },
   methods: {
-    logout: function () {
+      resetParam() {
+        this.widget = "home"
+      },
+    logout() {
       this.$store.dispatch('logout')
-              .then(resp => {console.log(resp)})
+              .then(resp => {console.log(resp); this.resetParam()})
               .catch(err => console.log(err))
     },
-    timePoint: function () {
+    timePoint() {
       this.$store.dispatch('clock')
               .then(resp => console.log(resp))
               .catch(err => console.log(err))
     },
-    viewMyProfile: function () {
+    viewMyProfile() {
       this.$store.dispatch('profile')
               .then(() => this.widget = 'profile')
               .catch(err => console.log(err))
     },
-    viewMyDashboard: function () {
+    viewMyDashboard() {
       this.$store.dispatch('profile')
               .then(() =>
                       this.$store.dispatch('dashboard')
@@ -126,12 +112,12 @@ export default {
               )
               .catch(err => console.log(err))
     },
-    viewMyTeamProfile: function () {
+    viewMyTeamProfile() {
       this.$store.dispatch('profile')
               .then(() => {
                 this.$store.dispatch('teamProfile', this.$store.state.myProfile.team)
                         .then(resp => console.log(resp))
-                        .catch(err => console.log(err))
+                        .catch(err => {alert("Sorry, access restricted."); console.log(err);})
                 this.$store.dispatch('allProfile')
                         .then(() => this.widget = 'team')
                         .catch(err => console.log(err))
@@ -139,18 +125,24 @@ export default {
               .catch(err => console.log(err))
 
     },
-    viewMyAllProfile: function () {
+    viewMyAllProfile() {
       this.$store.dispatch('profile')
               .then(() => {
                 this.$store.dispatch('allProfile')
                         .then(resp => {
-                          console.log(resp)
-                          this.widget = 'general'
+                          console.log(resp);
+                          this.widget = 'general';
+                          this.$store.dispatch('allDashboard')
+                                .then(resp => console.log(resp))
+                                .catch(err => {console.log(err); alert("Sorry, access restricted.");});
                         })
-                        .catch(err => console.log(err))
-              })
-              .catch(err => console.log(err))
+                        .catch(err => {console.log(err); alert("Sorry, access restricted.");})
 
+              })
+              .catch(err => {
+                  console.log(err);
+                  alert("the token has expired");
+              })
     },
   },
   components: {
