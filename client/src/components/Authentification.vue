@@ -29,28 +29,24 @@
         <div style="margin-top: 100px" v-if="logState ==='register'">
             <h4>REGISTER</h4>
             <form @submit.prevent="createUser">
-                <label for="password">Password</label>
+                <label for="username" >Username</label>
                 <div>
-                    <input id="password" type="password" v-model="password" required autofocus>
+                    <input id="username" type="text" v-model="username" required autofocus>
                 </div>
                 <label for="email" >E-Mail Address</label>
                 <div>
                     <input id="email" type="email" v-model="email" required>
                 </div>
-                <label for="team" >Your team</label>
+                <label for="password">Password</label>
                 <div>
-                    <input id="team" type="number" v-model="team" required>
+                    <input id="password" type="password" v-model="password" required>
                 </div>
-                <label for="username" >Username</label>
+                <label for="confirmPassword">Password</label>
                 <div>
-                    <input id="username" type="text" v-model="username" required>
-                </div>
-                <label for="status" >E-Mail Address</label>
-                <div>
-                    <input id="status" type="text" v-model="status" required>
+                    <input id="confirmPassword" type="password" v-model="confirmPassword" required>
                 </div>
                 <div>
-                    <button type="submit">Register</button>
+                    <b-button type="submit">Register</b-button>
                 </div>
             </form>
         </div>
@@ -64,14 +60,12 @@
         name: "Authentification",
         data() {
             return {
-                is_admin: null,
-                username: '',
-                email: '',
-                password: '',
+                username: null,
+                email: null,
+                password: null,
+                confirmPassword: null,
                 team: -1,
-                status: '',
-                id: -1,
-                errors: [],
+                role: "employee",
                 storeContent: this.$store.state,
                 logState: '',
             }
@@ -86,8 +80,7 @@
                     .catch(err => {console.log(err); alert("authentification failed.")})
             },
             createUser() {
-                this.errors = [];
-                this.$store.dispatch('register', {email: this.email, username: this.username, password: this.password, role: this.status, team: this.team})
+                this.$store.dispatch('register', {email: this.email, username: this.username, password: this.password, role: "employee", team: this.team})
                     .then(() => this.logState = 'login')
                     .catch(err => console.log(err))
             },
